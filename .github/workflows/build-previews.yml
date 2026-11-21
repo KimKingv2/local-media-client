@@ -58,20 +58,28 @@ jobs:
           gzip -t source/local-media-client-source.tar.gz
           tar -xzf source/local-media-client-source.tar.gz -C app-src
           for fix in source/patches/*.patch; do patch -d app-src -p1 < "$fix"; done
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          import gzip
+          import hashlib
+
+          encoded = Path(
+              "source/patches/0005-parse-and-group-local-media.patch.gz.b64"
+          ).read_text(encoding="ascii").strip()
+          compressed = base64.b64decode(encoded, validate=True)
+          expected = "ff7921fc5a8c6f70ed4bffc6640ddc76d9b3bea02815ab553ad5d973054e74e6"
+          actual = hashlib.sha256(compressed).hexdigest()
+          if actual != expected:
+              raise SystemExit(f"Media catalogue patch checksum mismatch: {actual}")
+          Path("/tmp/local-media-catalogue.patch").write_bytes(
+              gzip.decompress(compressed)
+          )
+          print("Verified and decompressed media catalogue patch.")
+          PY
+          patch -d app-src -p1 < /tmp/local-media-catalogue.patch
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_android_preview.sh
-
-      - name: Export reconstructed source for implementation inspection
-        uses: actions/upload-artifact@v4
-        with:
-          name: local-media-client-source-inspection
-          path: |
-            app-src/lib/
-            app-src/test/
-            app-src/pubspec.yaml
-            app-src/tool/
-          if-no-files-found: error
-          retention-days: 1
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -150,6 +158,26 @@ jobs:
           gzip -t source/local-media-client-source.tar.gz
           tar -xzf source/local-media-client-source.tar.gz -C app-src
           for fix in source/patches/*.patch; do patch -d app-src -p1 < "$fix"; done
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          import gzip
+          import hashlib
+
+          encoded = Path(
+              "source/patches/0005-parse-and-group-local-media.patch.gz.b64"
+          ).read_text(encoding="ascii").strip()
+          compressed = base64.b64decode(encoded, validate=True)
+          expected = "ff7921fc5a8c6f70ed4bffc6640ddc76d9b3bea02815ab553ad5d973054e74e6"
+          actual = hashlib.sha256(compressed).hexdigest()
+          if actual != expected:
+              raise SystemExit(f"Media catalogue patch checksum mismatch: {actual}")
+          Path("/tmp/local-media-catalogue.patch").write_bytes(
+              gzip.decompress(compressed)
+          )
+          print("Verified and decompressed media catalogue patch.")
+          PY
+          patch -d app-src -p1 < /tmp/local-media-catalogue.patch
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_macos_preview.sh
 
