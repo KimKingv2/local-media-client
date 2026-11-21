@@ -57,6 +57,7 @@ jobs:
           PY
           gzip -t source/local-media-client-source.tar.gz
           tar -xzf source/local-media-client-source.tar.gz -C app-src
+          patch -d app-src -p1 < source/patches/0001-add-webdav-scan-handler.patch
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_android_preview.sh
 
@@ -113,6 +114,7 @@ jobs:
           PY
           gzip -t source/local-media-client-source.tar.gz
           tar -xzf source/local-media-client-source.tar.gz -C app-src
+          patch -d app-src -p1 < source/patches/0001-add-webdav-scan-handler.patch
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_macos_preview.sh
 
