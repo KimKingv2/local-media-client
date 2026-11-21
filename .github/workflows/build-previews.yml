@@ -57,17 +57,9 @@ jobs:
           PY
           gzip -t source/local-media-client-source.tar.gz
           tar -xzf source/local-media-client-source.tar.gz -C app-src
-          patch -d app-src -p1 < source/patches/0001-add-webdav-scan-handler.patch
+          for fix in source/patches/*.patch; do patch -d app-src -p1 < "$fix"; done
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_android_preview.sh
-
-      - name: Inspect WebDAV Unicode path handling
-        if: runner.os == 'Linux'
-        run: |
-          echo "===== WebDAV adapter ====="
-          sed -n '1,520p' app-src/lib/core/media_sources/webdav/webdav_media_source_adapter.dart
-          echo "===== WebDAV adapter test ====="
-          sed -n '130,235p' app-src/test/webdav_media_source_adapter_test.dart
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -145,7 +137,7 @@ jobs:
           PY
           gzip -t source/local-media-client-source.tar.gz
           tar -xzf source/local-media-client-source.tar.gz -C app-src
-          patch -d app-src -p1 < source/patches/0001-add-webdav-scan-handler.patch
+          for fix in source/patches/*.patch; do patch -d app-src -p1 < "$fix"; done
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_macos_preview.sh
 
