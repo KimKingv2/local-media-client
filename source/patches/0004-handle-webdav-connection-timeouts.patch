@@ -1,12 +1,12 @@
 --- a/lib/core/media_sources/webdav/webdav_media_source_adapter.dart
 +++ b/lib/core/media_sources/webdav/webdav_media_source_adapter.dart
-@@ -1,5 +1,6 @@
+@@ -1,4 +1,5 @@
 +import 'dart:async';
  import 'dart:convert';
  import 'dart:io';
  
  import 'package:http/http.dart' as http;
-@@ -76,9 +77,18 @@
+@@ -76,7 +77,17 @@
        );
      }
  
@@ -41,8 +41,9 @@
    }
 --- a/lib/features/sources/webdav_source_manager_page.dart
 +++ b/lib/features/sources/webdav_source_manager_page.dart
-@@ -1,3 +1,4 @@
+@@ -1,3 +1,5 @@
 +import 'dart:async';
++
  import 'package:flutter/material.dart';
  import 'package:sqflite/sqflite.dart';
  
@@ -58,7 +59,7 @@
      return '連線或儲存失敗：${error.runtimeType}';
 --- a/test/webdav_media_source_adapter_test.dart
 +++ b/test/webdav_media_source_adapter_test.dart
-@@ -264,6 +264,31 @@
+@@ -264,7 +264,38 @@
        expect(capabilities.canRead, isTrue);
        expect(capabilities.supportsRange, isTrue);
        client.close();
