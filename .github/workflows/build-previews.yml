@@ -78,6 +78,18 @@ jobs:
           print("Verified and decompressed media catalogue patch.")
           PY
           patch -d app-src -p1 < /tmp/local-media-catalogue.patch
+
+      - name: Export patched Flutter source for playback integration
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-media-client-patched-source
+          path: |
+            app-src/lib/
+            app-src/test/
+            app-src/pubspec.yaml
+            app-src/tool/
+          if-no-files-found: error
+          retention-days: 1
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_android_preview.sh
 
