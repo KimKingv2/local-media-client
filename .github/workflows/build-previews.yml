@@ -61,6 +61,14 @@ jobs:
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_android_preview.sh
 
+      - name: Inspect WebDAV Unicode path handling
+        if: runner.os == 'Linux'
+        run: |
+          echo "===== WebDAV adapter ====="
+          sed -n '1,320p' app-src/lib/core/media_sources/webdav/webdav_media_source_adapter.dart
+          echo "===== WebDAV adapter test ====="
+          sed -n '130,235p' app-src/test/webdav_media_source_adapter_test.dart
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
