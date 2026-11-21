@@ -13,12 +13,14 @@ Implemented in the source bundle:
 - Recursive metadata-only WebDAV scanner for video, subtitle, artwork, and NFO/JSON sidecar files.
 - Conservative filename parsing for common movie-year, SxxExx, 1x02, Chinese season/episode, and Season-folder numbering patterns.
 - Local provisional catalogue grouping into movie and series → season → episode records, linked to the remote WebDAV file rows.
+- Direct WebDAV playback through MediaKit/libmpv on Android and macOS, using short-lived resolved playback URLs and in-memory HTTP headers.
+- In-player pause, seek, volume, embedded audio/subtitle selection, same-folder SRT/ASS/SSA/VTT sidecar subtitles, and local resume-position persistence.
 - Android and macOS preview build scripts.
 - GitHub Actions workflow for Android and macOS preview builds.
 
 Not implemented yet:
 - **Metadata scraping**: no TMDB/TVDB/other metadata-provider integration, provider-based title matching, poster/backdrop downloading, cast/crew lookup, or manual-match UI. The current filename parser only creates provisional local titles and hierarchy; it does not confirm identity against an online catalogue.
-- Actual video playback, subtitle/audio track selection, HDR or multichannel playback.
+- Advanced playback tuning, verified HDR passthrough, configurable multichannel bitstream passthrough, and final Android TV remote-control polish.
 - Production-ready Android TV and macOS UX.
 
 The scanner indexes remote paths and properties, then uses filenames and season folders to build a provisional local catalogue. Unrecognized files remain unmatched instead of being forced into a category. It does not fetch metadata from an online catalogue and does not download video files. NFO/JSON sidecars are indexed for future parsing, but are not yet converted into provider-matched metadata.
