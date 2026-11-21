@@ -86,14 +86,14 @@ jobs:
 
           folder = Path("source/patches/0006-parts")
           expected_parts = {
-              "00.b64": "d0b082a479d62afc327b4fb3b3cb0c116312a350e84b005fa9f4b1d0e97c344b",
-              "01.b64": "6b118e7f83e645dfdc0c2a437baa87ec3f03a654d64e46936174bdf288333811",
-              "02.b64": "b14587aec08ed552b80b14b8f55098d21a8fe57dafa854475c39fa64265ee7a3",
-              "03.b64": "35a18c0479e17df88e62fb714d6ba6ed3f12a466ab03ff6d644b1d6fa7b0a3fb",
-              "04.b64": "08fd53b4430768a715ac068b337130bf4d81153112c4deeff400e9411df0015f",
-              "05.b64": "b033690c0f9f0f9ae21167f2d9721b96f64129bc9ebdd4f15bc57899cebc190c",
-              "06.b64": "a62ffb4fe8310831025d041b9f0f0f9421df6d15fc12ba7e3601f9e4b49bf6b9",
-              "07.b64": "0b05695c7f680375f2a2c3e55c3b3243b4d55bb9e3a28b4bd953a6c668eb70a2",
+              "00.b64": "04d70bf4080d27dcd449a4a752e8dcce42208bd478f0639f1d6c2910ada0e353",
+              "01.b64": "0238c887677401e4cd7542e811d6bad83cb24058eb4f3bbde8f00ffd4a4bdc59",
+              "02.b64": "a5e5c4bb1b82834f33131fe6caee2de53ea8a177f06ec6e4a2d3f655231bfbf0",
+              "03.b64": "e61660bf769843c34faf624e7ae27d9dc0686aab8434f6216c5ba40f7694713b",
+              "04.b64": "32a6a6615ae9a3a52cd5fb39a1f5f31b4bd1e7a6dc713adaa01a7cbf078380ea",
+              "05.b64": "473c6557cf4cc4c134abca2416fea64aa9cff682e3236b1901fbfd97ff57ec2e",
+              "06.b64": "cc2d52b8003fd6afa7f7c9643ce5bcddb339e618ff567a76f13fa210d65d146f",
+              "07.b64": "cb6afce1c791e945465ee51e72e52811ad69010d73348921834811f0a6e11880",
           }
           paths = sorted(folder.glob("*.b64"))
           if [path.name for path in paths] != sorted(expected_parts):
@@ -106,7 +106,7 @@ jobs:
                   raise SystemExit(f"{path.name} checksum mismatch: {actual}")
               encoded_parts.append(raw.decode("ascii").strip())
           compressed = base64.b64decode("".join(encoded_parts), validate=True)
-          expected = "445fc644ec880a4025c3363947e8367e2293e0ded4643e9fe99886bb074bf88e"
+          expected = "254a6d18ed0f0df47e4765d29f73b7e7faeee9786c1608fde1140556279a526e"
           actual = hashlib.sha256(compressed).hexdigest()
           if actual != expected:
               raise SystemExit(f"Playback patch checksum mismatch: {actual}")
@@ -114,6 +114,7 @@ jobs:
           print("Verified native video playback patch.")
           PY
           patch -d app-src -p1 < /tmp/local-media-playback.patch
+          find app-src -name '*.orig' -type f -delete
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_android_preview.sh
 
@@ -234,14 +235,14 @@ jobs:
 
           folder = Path("source/patches/0006-parts")
           expected_parts = {
-              "00.b64": "d0b082a479d62afc327b4fb3b3cb0c116312a350e84b005fa9f4b1d0e97c344b",
-              "01.b64": "6b118e7f83e645dfdc0c2a437baa87ec3f03a654d64e46936174bdf288333811",
-              "02.b64": "b14587aec08ed552b80b14b8f55098d21a8fe57dafa854475c39fa64265ee7a3",
-              "03.b64": "35a18c0479e17df88e62fb714d6ba6ed3f12a466ab03ff6d644b1d6fa7b0a3fb",
-              "04.b64": "08fd53b4430768a715ac068b337130bf4d81153112c4deeff400e9411df0015f",
-              "05.b64": "b033690c0f9f0f9ae21167f2d9721b96f64129bc9ebdd4f15bc57899cebc190c",
-              "06.b64": "a62ffb4fe8310831025d041b9f0f0f9421df6d15fc12ba7e3601f9e4b49bf6b9",
-              "07.b64": "0b05695c7f680375f2a2c3e55c3b3243b4d55bb9e3a28b4bd953a6c668eb70a2",
+              "00.b64": "04d70bf4080d27dcd449a4a752e8dcce42208bd478f0639f1d6c2910ada0e353",
+              "01.b64": "0238c887677401e4cd7542e811d6bad83cb24058eb4f3bbde8f00ffd4a4bdc59",
+              "02.b64": "a5e5c4bb1b82834f33131fe6caee2de53ea8a177f06ec6e4a2d3f655231bfbf0",
+              "03.b64": "e61660bf769843c34faf624e7ae27d9dc0686aab8434f6216c5ba40f7694713b",
+              "04.b64": "32a6a6615ae9a3a52cd5fb39a1f5f31b4bd1e7a6dc713adaa01a7cbf078380ea",
+              "05.b64": "473c6557cf4cc4c134abca2416fea64aa9cff682e3236b1901fbfd97ff57ec2e",
+              "06.b64": "cc2d52b8003fd6afa7f7c9643ce5bcddb339e618ff567a76f13fa210d65d146f",
+              "07.b64": "cb6afce1c791e945465ee51e72e52811ad69010d73348921834811f0a6e11880",
           }
           paths = sorted(folder.glob("*.b64"))
           if [path.name for path in paths] != sorted(expected_parts):
@@ -254,7 +255,7 @@ jobs:
                   raise SystemExit(f"{path.name} checksum mismatch: {actual}")
               encoded_parts.append(raw.decode("ascii").strip())
           compressed = base64.b64decode("".join(encoded_parts), validate=True)
-          expected = "445fc644ec880a4025c3363947e8367e2293e0ded4643e9fe99886bb074bf88e"
+          expected = "254a6d18ed0f0df47e4765d29f73b7e7faeee9786c1608fde1140556279a526e"
           actual = hashlib.sha256(compressed).hexdigest()
           if actual != expected:
               raise SystemExit(f"Playback patch checksum mismatch: {actual}")
@@ -262,6 +263,7 @@ jobs:
           print("Verified native video playback patch.")
           PY
           patch -d app-src -p1 < /tmp/local-media-playback.patch
+          find app-src -name '*.orig' -type f -delete
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_macos_preview.sh
 
