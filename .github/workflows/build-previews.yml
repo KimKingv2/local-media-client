@@ -36,107 +36,10 @@ jobs:
           java-version: "17"
 
       - name: Reconstruct and extract Flutter source
-        run: |
-          mkdir -p app-src
-          python3 - <<'PY'
-          from pathlib import Path
-          import base64
-          import hashlib
-          
-          parts = sorted(Path("source/parts").glob("*.b64"))
-          encoded = "".join(part.read_text(encoding="ascii").strip() for part in parts)
-          if len(encoded) != 82160:
-              raise SystemExit(f"Unexpected source payload length: {len(encoded)}")
-          archive = base64.b64decode(encoded, validate=True)
-          expected = "4d15686e484d8ded1b64d850ad8fce1827048c07ce20a997037b201598009bcf"
-          actual = hashlib.sha256(archive).hexdigest()
-          if actual != expected:
-              raise SystemExit(f"Source archive checksum mismatch: {actual}")
-          Path("source/local-media-client-source.tar.gz").write_bytes(archive)
-          print(f"Source archive verified: {len(archive)} bytes, SHA-256 {actual}")
-          PY
-          gzip -t source/local-media-client-source.tar.gz
-          tar -xzf source/local-media-client-source.tar.gz -C app-src
-          for fix in source/patches/*.patch; do patch -d app-src -p1 < "$fix"; done
-          python3 - <<'PY'
-          from pathlib import Path
-          import base64
-          import gzip
-          import hashlib
+        run: python3 source/reconstruct_source.py --output app-src
 
-          encoded = Path(
-              "source/patches/0005-parse-and-group-local-media.patch.gz.b64"
-          ).read_text(encoding="ascii").strip()
-          compressed = base64.b64decode(encoded, validate=True)
-          expected = "ff7921fc5a8c6f70ed4bffc6640ddc76d9b3bea02815ab553ad5d973054e74e6"
-          actual = hashlib.sha256(compressed).hexdigest()
-          if actual != expected:
-              raise SystemExit(f"Media catalogue patch checksum mismatch: {actual}")
-          Path("/tmp/local-media-catalogue.patch").write_bytes(
-              gzip.decompress(compressed)
-          )
-          print("Verified and decompressed media catalogue patch.")
-          PY
-          patch -d app-src -p1 < /tmp/local-media-catalogue.patch
-          python3 - <<'PY'
-          from pathlib import Path
-          import base64
-          import gzip
-          import hashlib
-
-          folder = Path("source/patches/0006-parts")
-          expected_parts = {
-              "00.b64": "f3b122c81ceaf663c481dc447bde5514ac3ab0c23d4a99280fef92044cafdc18",
-              "01.b64": "8b777241e8068a065f58779975f2722f355222b2010c99e9b46e1a80e26bd7e3",
-              "02.b64": "f8e8434e3f389b8f43657ebc6ade6254a260b1e3fd7bec116b3b63108cda2419",
-              "03.b64": "0cae7238a95f4815294330c07e03f7a345116c35cc264277bbf740508401d55f",
-              "04.b64": "07768e7738150e02087d7f10a1f54e5b9c5dceb25b2d9081eeda5950d1a65f1e",
-              "05.b64": "51dced49cb8ab3ce9e61f0167b2d77d7121140593fe88fd2415d4c2317c6cbc1",
-              "06.b64": "620793607775e33daf59666f4f8ae836fb788d9f4ea4da9c12eb524e2838327e",
-              "07.b64": "fbbc070ac33af1b4c69ac13251664946023ce5b9da2e9e40da10366c000c04c9",
-          }
-          paths = sorted(folder.glob("*.b64"))
-          if [path.name for path in paths] != sorted(expected_parts):
-              raise SystemExit("Playback patch parts are incomplete or unexpected.")
-          encoded_parts = []
-          for path in paths:
-              raw = path.read_bytes()
-              actual = hashlib.sha256(raw).hexdigest()
-              if actual != expected_parts[path.name]:
-                  raise SystemExit(f"{path.name} checksum mismatch: {actual}")
-              encoded_parts.append(raw.decode("ascii").strip())
-          compressed = base64.b64decode("".join(encoded_parts), validate=True)
-          expected = "2ded2454c07b03baebdefef64dc481b4190bdc283f487760b92d9845e26d1b71"
-          actual = hashlib.sha256(compressed).hexdigest()
-          if actual != expected:
-              raise SystemExit(f"Playback patch checksum mismatch: {actual}")
-          Path("/tmp/local-media-playback.patch").write_bytes(gzip.decompress(compressed))
-          print("Verified native video playback patch.")
-          PY
-          patch -d app-src -p1 < /tmp/local-media-playback.patch
-          python3 - <<'PY'
-          from pathlib import Path
-          import base64
-          import gzip
-          import hashlib
-
-          encoded = Path(
-              "source/patches/0007-fix-webdav-playback-scan-ui.patch.gz.b64"
-          ).read_text(encoding="ascii").strip()
-          compressed = base64.b64decode(encoded, validate=True)
-          expected = "7c70e4851e1af722866287498530286a880779081cb2f78c9c3e0591f922a3bb"
-          actual = hashlib.sha256(compressed).hexdigest()
-          if actual != expected:
-              raise SystemExit(f"Post-playback patch checksum mismatch: {actual}")
-          Path("/tmp/local-media-post-playback.patch").write_bytes(
-              gzip.decompress(compressed)
-          )
-          print("Verified post-playback WebDAV and UI patch.")
-          PY
-          patch -d app-src -p1 < /tmp/local-media-post-playback.patch
-          find app-src -name '*.orig' -type f -delete
-          test -f app-src/pubspec.yaml
-          test -x app-src/tool/build_android_preview.sh
+      - name: Test platform configuration tooling
+        run: python3 -m unittest discover -s app-src/test/tooling -p 'test_*.py' -v
 
       - name: Export patched Flutter source for playback integration
         uses: actions/upload-artifact@v4
@@ -183,7 +86,7 @@ jobs:
 
       - name: Build and test Android preview
         env:
-          ALLOW_CLEARTEXT_WEB_DAV: ${{ inputs.allow_cleartext_webdav && '1' || '0' }}
+          ALLOW_CLEARTEXT_WEB_DAV: ${{ github.event_name == 'push' && '1' || (inputs.allow_cleartext_webdav && '1' || '0') }}
         run: cd app-src && ./tool/build_android_preview.sh
 
       - name: Upload Android APK
@@ -205,107 +108,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Reconstruct and extract Flutter source
-        run: |
-          mkdir -p app-src
-          python3 - <<'PY'
-          from pathlib import Path
-          import base64
-          import hashlib
-          
-          parts = sorted(Path("source/parts").glob("*.b64"))
-          encoded = "".join(part.read_text(encoding="ascii").strip() for part in parts)
-          if len(encoded) != 82160:
-              raise SystemExit(f"Unexpected source payload length: {len(encoded)}")
-          archive = base64.b64decode(encoded, validate=True)
-          expected = "4d15686e484d8ded1b64d850ad8fce1827048c07ce20a997037b201598009bcf"
-          actual = hashlib.sha256(archive).hexdigest()
-          if actual != expected:
-              raise SystemExit(f"Source archive checksum mismatch: {actual}")
-          Path("source/local-media-client-source.tar.gz").write_bytes(archive)
-          print(f"Source archive verified: {len(archive)} bytes, SHA-256 {actual}")
-          PY
-          gzip -t source/local-media-client-source.tar.gz
-          tar -xzf source/local-media-client-source.tar.gz -C app-src
-          for fix in source/patches/*.patch; do patch -d app-src -p1 < "$fix"; done
-          python3 - <<'PY'
-          from pathlib import Path
-          import base64
-          import gzip
-          import hashlib
-
-          encoded = Path(
-              "source/patches/0005-parse-and-group-local-media.patch.gz.b64"
-          ).read_text(encoding="ascii").strip()
-          compressed = base64.b64decode(encoded, validate=True)
-          expected = "ff7921fc5a8c6f70ed4bffc6640ddc76d9b3bea02815ab553ad5d973054e74e6"
-          actual = hashlib.sha256(compressed).hexdigest()
-          if actual != expected:
-              raise SystemExit(f"Media catalogue patch checksum mismatch: {actual}")
-          Path("/tmp/local-media-catalogue.patch").write_bytes(
-              gzip.decompress(compressed)
-          )
-          print("Verified and decompressed media catalogue patch.")
-          PY
-          patch -d app-src -p1 < /tmp/local-media-catalogue.patch
-          python3 - <<'PY'
-          from pathlib import Path
-          import base64
-          import gzip
-          import hashlib
-
-          folder = Path("source/patches/0006-parts")
-          expected_parts = {
-              "00.b64": "f3b122c81ceaf663c481dc447bde5514ac3ab0c23d4a99280fef92044cafdc18",
-              "01.b64": "8b777241e8068a065f58779975f2722f355222b2010c99e9b46e1a80e26bd7e3",
-              "02.b64": "f8e8434e3f389b8f43657ebc6ade6254a260b1e3fd7bec116b3b63108cda2419",
-              "03.b64": "0cae7238a95f4815294330c07e03f7a345116c35cc264277bbf740508401d55f",
-              "04.b64": "07768e7738150e02087d7f10a1f54e5b9c5dceb25b2d9081eeda5950d1a65f1e",
-              "05.b64": "51dced49cb8ab3ce9e61f0167b2d77d7121140593fe88fd2415d4c2317c6cbc1",
-              "06.b64": "620793607775e33daf59666f4f8ae836fb788d9f4ea4da9c12eb524e2838327e",
-              "07.b64": "fbbc070ac33af1b4c69ac13251664946023ce5b9da2e9e40da10366c000c04c9",
-          }
-          paths = sorted(folder.glob("*.b64"))
-          if [path.name for path in paths] != sorted(expected_parts):
-              raise SystemExit("Playback patch parts are incomplete or unexpected.")
-          encoded_parts = []
-          for path in paths:
-              raw = path.read_bytes()
-              actual = hashlib.sha256(raw).hexdigest()
-              if actual != expected_parts[path.name]:
-                  raise SystemExit(f"{path.name} checksum mismatch: {actual}")
-              encoded_parts.append(raw.decode("ascii").strip())
-          compressed = base64.b64decode("".join(encoded_parts), validate=True)
-          expected = "2ded2454c07b03baebdefef64dc481b4190bdc283f487760b92d9845e26d1b71"
-          actual = hashlib.sha256(compressed).hexdigest()
-          if actual != expected:
-              raise SystemExit(f"Playback patch checksum mismatch: {actual}")
-          Path("/tmp/local-media-playback.patch").write_bytes(gzip.decompress(compressed))
-          print("Verified native video playback patch.")
-          PY
-          patch -d app-src -p1 < /tmp/local-media-playback.patch
-          python3 - <<'PY'
-          from pathlib import Path
-          import base64
-          import gzip
-          import hashlib
-
-          encoded = Path(
-              "source/patches/0007-fix-webdav-playback-scan-ui.patch.gz.b64"
-          ).read_text(encoding="ascii").strip()
-          compressed = base64.b64decode(encoded, validate=True)
-          expected = "7c70e4851e1af722866287498530286a880779081cb2f78c9c3e0591f922a3bb"
-          actual = hashlib.sha256(compressed).hexdigest()
-          if actual != expected:
-              raise SystemExit(f"Post-playback patch checksum mismatch: {actual}")
-          Path("/tmp/local-media-post-playback.patch").write_bytes(
-              gzip.decompress(compressed)
-          )
-          print("Verified post-playback WebDAV and UI patch.")
-          PY
-          patch -d app-src -p1 < /tmp/local-media-post-playback.patch
-          find app-src -name '*.orig' -type f -delete
-          test -f app-src/pubspec.yaml
-          test -x app-src/tool/build_macos_preview.sh
+        run: python3 source/reconstruct_source.py --output app-src
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -340,7 +143,7 @@ jobs:
 
       - name: Build and test macOS preview
         env:
-          ALLOW_CLEARTEXT_WEB_DAV: ${{ inputs.allow_cleartext_webdav && '1' || '0' }}
+          ALLOW_CLEARTEXT_WEB_DAV: ${{ github.event_name == 'push' && '1' || (inputs.allow_cleartext_webdav && '1' || '0') }}
         run: cd app-src && ./tool/build_macos_preview.sh
 
       - name: Upload macOS app bundle
