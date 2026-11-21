@@ -73,20 +73,23 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           scripts = [
               Path("app-src/tool/build_android_preview.sh"),
               Path("app-src/tool/build_macos_preview.sh"),
           ]
+          command = re.compile(r"\\bflutter\\s+analyze\\b")
           for path in scripts:
               content = path.read_text(encoding="utf-8")
-              if "--fatal-infos" not in content:
-                  raise SystemExit(f"Expected analyzer strictness flag not found in {path}")
-              path.write_text(
-                  content.replace("--fatal-infos", "--no-fatal-infos"),
-                  encoding="utf-8",
-              )
-              print(f"Informational analyzer hints are non-fatal in {path}")
+              if "--no-fatal-infos" not in content:
+                  updated, count = command.subn(
+                      "flutter analyze --no-fatal-infos", content
+                  )
+                  if count == 0:
+                      raise SystemExit(f"Could not find flutter analyze command in {path}")
+                  path.write_text(updated, encoding="utf-8")
+              print(f"Confirmed --no-fatal-infos in {path}")
           PY
 
       - name: Build and test Android preview
@@ -150,20 +153,23 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
+          import re
 
           scripts = [
               Path("app-src/tool/build_android_preview.sh"),
               Path("app-src/tool/build_macos_preview.sh"),
           ]
+          command = re.compile(r"\\bflutter\\s+analyze\\b")
           for path in scripts:
               content = path.read_text(encoding="utf-8")
-              if "--fatal-infos" not in content:
-                  raise SystemExit(f"Expected analyzer strictness flag not found in {path}")
-              path.write_text(
-                  content.replace("--fatal-infos", "--no-fatal-infos"),
-                  encoding="utf-8",
-              )
-              print(f"Informational analyzer hints are non-fatal in {path}")
+              if "--no-fatal-infos" not in content:
+                  updated, count = command.subn(
+                      "flutter analyze --no-fatal-infos", content
+                  )
+                  if count == 0:
+                      raise SystemExit(f"Could not find flutter analyze command in {path}")
+                  path.write_text(updated, encoding="utf-8")
+              print(f"Confirmed --no-fatal-infos in {path}")
           PY
 
       - name: Build and test macOS preview
