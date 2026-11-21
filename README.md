@@ -27,7 +27,18 @@ The current scanner only indexes remote file paths and properties. It does not f
 The compressed Flutter source is stored as text-safe base64 parts in `source/parts/`. Reconstruct and extract it with:
 
 ```bash
-cat source/parts/*.b64 | base64 --decode > /tmp/local-media-client-source.tar.gz
+python3 - <<'PY'
+from pathlib import Path
+import base64
+
+encoded = "".join(
+    part.read_text(encoding="ascii").strip()
+    for part in sorted(Path("source/parts").glob("*.b64"))
+)
+Path("/tmp/local-media-client-source.tar.gz").write_bytes(
+    base64.b64decode(encoded, validate=True)
+)
+PY
 mkdir -p local-media-client
 tar -xzf /tmp/local-media-client-source.tar.gz -C local-media-client
 cd local-media-client
@@ -37,7 +48,7 @@ The archive includes the project README, architecture documents, Dart source, te
 
 ## Build automation
 
-The GitHub Actions workflow in `.github/workflows/build-previews.yml` reconstructs the source archive, sets up Flutter, runs formatting, static analysis and tests, then builds:
+The GitHub Actions workflow in `.github/workflows/build-previews.yml` reconstructs and checksum-verifies the source archive, sets up Flutter, runs formatting, static analysis and tests, then builds:
 - Android preview APK for Android TV / tablet / phone.
 - macOS app preview ZIP.
 
