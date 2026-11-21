@@ -24,7 +24,7 @@ The current scanner only indexes remote file paths and properties. It does not f
 
 ## Source code
 
-The compressed Flutter source is stored as text-safe base64 parts in `source/parts/`. Reconstruct and extract it with:
+The compressed Flutter source is stored as text-safe base64 parts in `source/parts/`. Reconstruct, extract, and apply the tracked source fixes with:
 
 ```bash
 python3 - <<'PY'
@@ -41,14 +41,17 @@ Path("/tmp/local-media-client-source.tar.gz").write_bytes(
 PY
 mkdir -p local-media-client
 tar -xzf /tmp/local-media-client-source.tar.gz -C local-media-client
+for fix in source/patches/*.patch; do
+  patch -d local-media-client -p1 < "$fix"
+done
 cd local-media-client
 ```
 
-The archive includes the project README, architecture documents, Dart source, tests, and build scripts.
+The Actions workflow performs the same reconstruction and applies each tracked patch before compiling. This keeps small source corrections reviewable without repeatedly re-uploading the compressed archive.
 
 ## Build automation
 
-The GitHub Actions workflow in `.github/workflows/build-previews.yml` reconstructs and checksum-verifies the source archive, sets up Flutter, runs formatting, static analysis and tests, then builds:
+The GitHub Actions workflow in `.github/workflows/build-previews.yml` reconstructs and checksum-verifies the source archive, applies tracked source patches, sets up Flutter, runs formatting, static analysis and tests, then builds:
 - Android preview APK for Android TV / tablet / phone.
 - macOS app preview ZIP.
 
