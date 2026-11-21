@@ -86,7 +86,7 @@ jobs:
 
       - name: Build and test Android preview
         env:
-          ALLOW_CLEARTEXT_WEB_DAV: ${{ github.event_name == 'push' && '1' || (inputs.allow_cleartext_webdav && '1' || '0') }}
+          ALLOW_CLEARTEXT_WEB_DAV: ${{ inputs.allow_cleartext_webdav && '1' || '0' }}
         run: cd app-src && ./tool/build_android_preview.sh
 
       - name: Upload Android APK
@@ -143,7 +143,7 @@ jobs:
 
       - name: Build and test macOS preview
         env:
-          ALLOW_CLEARTEXT_WEB_DAV: ${{ github.event_name == 'push' && '1' || (inputs.allow_cleartext_webdav && '1' || '0') }}
+          ALLOW_CLEARTEXT_WEB_DAV: ${{ inputs.allow_cleartext_webdav && '1' || '0' }}
         run: cd app-src && ./tool/build_macos_preview.sh
 
       - name: Upload macOS app bundle

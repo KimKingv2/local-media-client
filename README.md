@@ -18,6 +18,8 @@ Implemented:
 
 The playback engine and UI are integrated, and protocol/unit tests cover the WebDAV request flow. **The CI build does not connect to your live WebDAV server or prove end-to-end playback on every device/server combination.** Your OpenList/WebDAV server and actual media files still need device-level verification.
 
+The Android APK and macOS app produced by this workflow are Flutter **debug builds**, intended for evaluation rather than production or store distribution. The Android APK is marked debuggable. The macOS workflow does not perform Developer ID signing or notarization.
+
 Not implemented or not production-ready:
 - Online metadata scraping or provider matching (TMDB/TVDB etc.), cast/crew details, and an automated poster/backdrop catalogue. NFO/JSON files are indexed but not yet parsed into provider metadata.
 - Server-side transcoding or compatibility conversion. The app requests the original remote media; playback depends on the source file, server HTTP behavior, and the bundled media engine.
@@ -29,35 +31,35 @@ Not implemented or not production-ready:
 
 The base Flutter archive and subsequent source patches are tracked separately. Use the helper below to verify the checksums, reconstruct the archive, and apply **all** patches in the same order used by GitHub Actions:
 
-\`\`\`bash
+```bash
 python3 source/reconstruct_source.py --output local-media-client
 cd local-media-client
 flutter pub get
-\`\`\`
+```
 
-The script requires Python 3, \`gzip\`, \`tar\`, and the system \`patch\` utility. The output directory must be empty or not yet exist.
+The script requires Python 3, `gzip`, `tar`, and the system `patch` utility. The output directory must be empty or not yet exist.
 
 Build locally:
 
-\`\`\`bash
+```bash
 ./tool/build_android_preview.sh
 ./tool/build_macos_preview.sh
-\`\`\`
+```
 
 For a trusted LAN WebDAV server that uses plain HTTP, explicitly opt in when building locally:
 
-\`\`\`bash
+```bash
 ALLOW_CLEARTEXT_WEB_DAV=1 ./tool/build_android_preview.sh
-\`\`\`
+```
 
 ## GitHub Actions previews
 
 The workflow reconstructs the exact same source with checksum verification, runs platform-configuration tests, Flutter static analysis and Flutter tests, then builds Android and macOS previews. Successful APK/ZIP artifacts are attached to the workflow run.
 
-For pushes to \`main\`, the preview builds permit plain HTTP so they can connect to common home-LAN WebDAV endpoints. A manually dispatched workflow remains HTTPS-only by default; its \`allow_cleartext_webdav\` option can opt in.
+Push and pull-request builds default to HTTPS-only. To generate a preview for a plain-HTTP home-LAN WebDAV server, open GitHub Actions → **Build installable previews** → **Run workflow**, then explicitly enable `allow_cleartext_webdav`.
 
 ## Security note
 
-**Plain HTTP is not encrypted.** HTTP Basic credentials, media requests, and media data can be observed by anyone able to monitor that network traffic. The main-branch preview packages allow cleartext HTTP for home-LAN testing, so use them only on a trusted network. Use HTTPS for access over the internet, public Wi-Fi, or any untrusted network. The manually dispatched workflow keeps this permission disabled unless explicitly enabled.
+**Plain HTTP is not encrypted.** When `allow_cleartext_webdav` is enabled, Android sets `usesCleartextTraffic=true` and macOS sets `NSAllowsArbitraryLoads=true` for the whole app. This is not restricted to `192.168.31.185`, a hostname, or a private IP range. HTTP Basic credentials, media requests, and media data can be observed by anyone able to monitor that network traffic. Enable this only for a trusted LAN; use HTTPS over the internet, public Wi-Fi, or any untrusted network.
 
 The preview does not include a hosted backend, account service, Cloudflare Worker, or mandatory sign-in. Each installation keeps its own local SQLite catalogue and playback state.
