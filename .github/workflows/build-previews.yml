@@ -61,6 +61,18 @@ jobs:
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_android_preview.sh
 
+      - name: Export reconstructed source for implementation inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-media-client-source-inspection
+          path: |
+            app-src/lib/
+            app-src/test/
+            app-src/pubspec.yaml
+            app-src/tool/
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
