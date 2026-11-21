@@ -1,83 +1,61 @@
 # Local Media Client
 
-A local-first media library client targeting Android TV, Android tablets, Android phones, and macOS.
+A local-first media library client for Android TV, Android tablets, Android phones, and macOS. Media stays on the WebDAV server; the app maintains a local catalogue and streams selected files directly.
 
 ## Current implementation status
 
-**This is an early engineering preview, not yet a complete media-center app.**
+**This is an engineering preview, not a production-ready media centre.**
 
-Implemented in the source bundle:
-- Local SQLite schema and migrations.
-- Standard WebDAV source configuration and directory browsing.
-- Anonymous and HTTP Basic authentication, with credentials stored in OS secure storage.
-- Recursive metadata-only WebDAV scanner for video, subtitle, artwork, and NFO/JSON sidecar files.
-- Conservative filename parsing for common movie-year, SxxExx, 1x02, Chinese season/episode, and Season-folder numbering patterns.
-- Local provisional catalogue grouping into movie and series → season → episode records, linked to the remote WebDAV file rows.
-- WebDAV playback URL resolution and a platform-independent player interface are present as groundwork; an actual playback engine and player UI are not integrated yet.
-- Android and macOS preview build scripts.
-- GitHub Actions workflow for Android and macOS preview builds.
+Implemented:
+- WebDAV source setup, connection testing, directory browsing, anonymous access, and HTTP Basic authentication. Saved credentials are kept in OS secure storage.
+- Recursive metadata-only scanning for video, subtitle, artwork, and NFO/JSON sidecar files. Scanning does not download video bodies.
+- Conservative filename parsing and provisional local grouping for movies, series, seasons, and episodes. This is not provider-based metadata matching.
+- Integrated MediaKit/libmpv video player and playback UI for Android and macOS. Playback resolves the WebDAV resource immediately before opening and streams from its HTTP(S) URL rather than copying the movie to local storage.
+- A one-byte HTTP Range GET probe for playback access and redirect resolution. The probe cancels the response body; it does not download the video. The client does not require HEAD to succeed.
+- Local playback-position persistence and resume, plus play/pause, seeking, and volume controls.
+- Selection of embedded audio and subtitle tracks. Same-name external SRT/ASS/SSA/VTT subtitles can be discovered from the parent WebDAV directory and loaded into memory (currently capped at 4 MiB per subtitle file).
 
-Not implemented yet:
-- **Metadata scraping**: no TMDB/TVDB/other metadata-provider integration, provider-based title matching, poster/backdrop downloading, cast/crew lookup, or manual-match UI. The current filename parser only creates provisional local titles and hierarchy; it does not confirm identity against an online catalogue.
-- Actual video playback and player UI on Android/macOS, audio/subtitle track selection, external subtitle loading, resume playback, HDR/multichannel tuning, and Android TV remote-control polish.
-- Production-ready Android TV and macOS UX.
+The playback engine and UI are integrated, and protocol/unit tests cover the WebDAV request flow. **The CI build does not connect to your live WebDAV server or prove end-to-end playback on every device/server combination.** Your OpenList/WebDAV server and actual media files still need device-level verification.
 
-The scanner indexes remote paths and properties, then uses filenames and season folders to build a provisional local catalogue. Unrecognized files remain unmatched instead of being forced into a category. WebDAV playback URL resolution is implemented as groundwork, but the current app cannot open or play a video yet. It does not fetch metadata from an online catalogue. NFO/JSON sidecars are indexed for future parsing, but are not yet converted into provider-matched metadata.
+Not implemented or not production-ready:
+- Online metadata scraping or provider matching (TMDB/TVDB etc.), cast/crew details, and an automated poster/backdrop catalogue. NFO/JSON files are indexed but not yet parsed into provider metadata.
+- Server-side transcoding or compatibility conversion. The app requests the original remote media; playback depends on the source file, server HTTP behavior, and the bundled media engine.
+- Production-grade HDR, multichannel passthrough, codec tuning, and complete Android TV remote-control polish.
+- A mature backup/sync system for the local catalogue and playback state across devices.
 
-## Source code
+## Reconstruct the complete Flutter source
 
-The compressed Flutter source is stored as text-safe base64 parts in `source/parts/`. Reconstruct, extract, and apply the tracked source fixes with:
+The base Flutter archive and subsequent source patches are tracked separately. Use the helper below to verify the checksums, reconstruct the archive, and apply **all** patches in the same order used by GitHub Actions:
 
-```bash
-python3 - <<'PY'
-from pathlib import Path
-import base64
-
-encoded = "".join(
-    part.read_text(encoding="ascii").strip()
-    for part in sorted(Path("source/parts").glob("*.b64"))
-)
-Path("/tmp/local-media-client-source.tar.gz").write_bytes(
-    base64.b64decode(encoded, validate=True)
-)
-PY
-mkdir -p local-media-client
-tar -xzf /tmp/local-media-client-source.tar.gz -C local-media-client
-for fix in source/patches/*.patch; do
-  patch -d local-media-client -p1 < "$fix"
-done
-python3 - <<'PY'
-from pathlib import Path
-import base64, gzip, hashlib
-encoded = Path("source/patches/0005-parse-and-group-local-media.patch.gz.b64").read_text().strip()
-compressed = base64.b64decode(encoded, validate=True)
-expected = "ff7921fc5a8c6f70ed4bffc6640ddc76d9b3bea02815ab553ad5d973054e74e6"
-if hashlib.sha256(compressed).hexdigest() != expected:
-    raise SystemExit("Media catalogue patch checksum mismatch")
-Path("/tmp/media-catalogue.patch").write_bytes(gzip.decompress(compressed))
-PY
-patch -d local-media-client -p1 < /tmp/media-catalogue.patch
+\`\`\`bash
+python3 source/reconstruct_source.py --output local-media-client
 cd local-media-client
-```
+flutter pub get
+\`\`\`
 
-The Actions workflow performs the same reconstruction and applies each tracked patch before compiling. This keeps small source corrections reviewable without repeatedly re-uploading the compressed archive.
+The script requires Python 3, \`gzip\`, \`tar\`, and the system \`patch\` utility. The output directory must be empty or not yet exist.
 
-## Build automation
+Build locally:
 
-The GitHub Actions workflow in `.github/workflows/build-previews.yml` reconstructs and checksum-verifies the source archive, applies tracked source patches, sets up Flutter, runs formatting, static analysis and tests, then builds:
-- Android preview APK for Android TV / tablet / phone.
-- macOS app preview ZIP.
+\`\`\`bash
+./tool/build_android_preview.sh
+./tool/build_macos_preview.sh
+\`\`\`
 
-Successful builds are uploaded as workflow artifacts for 30 days.
+For a trusted LAN WebDAV server that uses plain HTTP, explicitly opt in when building locally:
 
-## Product architecture
+\`\`\`bash
+ALLOW_CLEARTEXT_WEB_DAV=1 ./tool/build_android_preview.sh
+\`\`\`
 
-- No hosted backend, Cloudflare, D1, Workers, or mandatory account.
-- Metadata and artwork will be stored locally on each installation.
-- Media files remain on the WebDAV server and are not copied into the app.
-- Standard WebDAV is the only remote media protocol in the initial scope.
-- Each device has its own local SQLite catalogue and artwork cache.
+## GitHub Actions previews
+
+The workflow reconstructs the exact same source with checksum verification, runs platform-configuration tests, Flutter static analysis and Flutter tests, then builds Android and macOS previews. Successful APK/ZIP artifacts are attached to the workflow run.
+
+For pushes to \`main\`, the preview builds permit plain HTTP so they can connect to common home-LAN WebDAV endpoints. A manually dispatched workflow remains HTTPS-only by default; its \`allow_cleartext_webdav\` option can opt in.
 
 ## Security note
 
-HTTPS WebDAV is strongly recommended. HTTP Basic credentials and media traffic are unencrypted over plain HTTP. The workflow keeps cleartext WebDAV disabled by default.
+**Plain HTTP is not encrypted.** HTTP Basic credentials, media requests, and media data can be observed by anyone able to monitor that network traffic. The main-branch preview packages allow cleartext HTTP for home-LAN testing, so use them only on a trusted network. Use HTTPS for access over the internet, public Wi-Fi, or any untrusted network. The manually dispatched workflow keeps this permission disabled unless explicitly enabled.
+
+The preview does not include a hosted backend, account service, Cloudflare Worker, or mandatory sign-in. Each installation keeps its own local SQLite catalogue and playback state.

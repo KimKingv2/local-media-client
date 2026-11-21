@@ -1,29 +1,13 @@
 # Flutter source bundle
 
-The Flutter project is stored as eight base64 text fragments in `parts/` so that GitHub can reliably host and version the source archive.
+The base Flutter project is stored as eight base64 text fragments in \`parts/\`. Tracked patch files under \`patches/\` add the WebDAV source, catalogue, native MediaKit playback integration, and later playback/scanner/UI corrections.
 
-Reconstruct it from the repository root:
+From the repository root, reconstruct the exact buildable source with:
 
-```bash
-python3 - <<'PY'
-from pathlib import Path
-import base64
-import hashlib
+\`\`\`bash
+python3 source/reconstruct_source.py --output local-media-client
+\`\`\`
 
-encoded = "".join(
-    part.read_text(encoding="ascii").strip()
-    for part in sorted(Path("source/parts").glob("*.b64"))
-)
-archive = base64.b64decode(encoded, validate=True)
-digest = hashlib.sha256(archive).hexdigest()
-expected = "4d15686e484d8ded1b64d850ad8fce1827048c07ce20a997037b201598009bcf"
-if digest != expected:
-    raise SystemExit(f"Checksum mismatch: {digest}")
-Path("/tmp/local-media-client-source.tar.gz").write_bytes(archive)
-print(f"Verified {len(archive)} bytes: {digest}")
-PY
-mkdir -p local-media-client
-tar -xzf /tmp/local-media-client-source.tar.gz -C local-media-client
-```
+The helper validates the base archive and every compressed/split patch with SHA-256 checksums, extracts the Flutter project, and applies patches in the same order as the GitHub Actions workflow. The output directory must be empty or not yet exist.
 
-The Android and macOS GitHub Actions jobs perform the same reconstruction and checksum verification before building.
+The Android and macOS GitHub Actions jobs call this helper directly. Avoid extracting only \`parts/\` and treating the result as the current app source: the later tracked patches are required.
