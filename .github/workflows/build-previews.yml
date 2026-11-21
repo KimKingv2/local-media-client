@@ -79,7 +79,7 @@ jobs:
               Path("app-src/tool/build_android_preview.sh"),
               Path("app-src/tool/build_macos_preview.sh"),
           ]
-          command = re.compile(r"\\bflutter\\s+analyze\\b")
+          command = re.compile(r"\bflutter\s+analyze\b")
           for path in scripts:
               content = path.read_text(encoding="utf-8")
               if "--no-fatal-infos" not in content:
@@ -159,7 +159,7 @@ jobs:
               Path("app-src/tool/build_android_preview.sh"),
               Path("app-src/tool/build_macos_preview.sh"),
           ]
-          command = re.compile(r"\\bflutter\\s+analyze\\b")
+          command = re.compile(r"\bflutter\s+analyze\b")
           for path in scripts:
               content = path.read_text(encoding="utf-8")
               if "--no-fatal-infos" not in content:
