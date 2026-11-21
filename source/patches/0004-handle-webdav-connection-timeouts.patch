@@ -1,0 +1,98 @@
+--- a/lib/core/media_sources/webdav/webdav_media_source_adapter.dart
++++ b/lib/core/media_sources/webdav/webdav_media_source_adapter.dart
+@@ -1,5 +1,6 @@
++import 'dart:async';
+ import 'dart:convert';
+ import 'dart:io';
+ 
+ import 'package:http/http.dart' as http;
+@@ -76,9 +77,18 @@
+       );
+     }
+ 
+-    final probe = await _probeRange(config, firstFile.path);
++    late final _ProbeResult probe;
++    try {
++      probe = await _probeRange(config, firstFile.path);
++    } on TimeoutException {
++      return const MediaSourceCapabilities(
++        canList: true,
++        canRead: false,
++        supportsRange: false,
++        supportsRedirect: false,
++      );
++    }
+     return MediaSourceCapabilities(
+       canList: true,
+       canRead: probe.statusCode == 200 ||
+@@ -359,4 +369,11 @@
+   Future<http.Response> _send(http.BaseRequest request) async {
+-    final streamed = await _client.send(request).timeout(requestTimeout);
+-    return http.Response.fromStream(streamed).timeout(requestTimeout);
++    try {
++      final streamed = await _client.send(request).timeout(requestTimeout);
++      return await http.Response.fromStream(streamed).timeout(requestTimeout);
++    } on TimeoutException {
++      throw WebDavException(
++        message:
++            'WebDAV directory listing timed out after ${requestTimeout.inSeconds} seconds. Check the endpoint, network, and PROPFIND support.',
++      );
++    }
+   }
+--- a/lib/features/sources/webdav_source_manager_page.dart
++++ b/lib/features/sources/webdav_source_manager_page.dart
+@@ -1,3 +1,4 @@
++import 'dart:async';
+ import 'package:flutter/material.dart';
+ import 'package:sqflite/sqflite.dart';
+ 
+@@ -321,6 +322,9 @@
+     // URL query (which could be a temporary signed URL) or any credential values
+     // in the UI error surface.
+     if (error is WebDavException) return error.message;
++    if (error is TimeoutException) {
++      return '操作逾時：請確認網路連線與 WebDAV 伺服器是否正常回應。';
++    }
+     if (text.contains('SocketException')) return '無法連線，請檢查地址、網路及伺服器狀態。';
+     if (text.contains('HandshakeException')) return 'TLS 憑證驗證失敗，請檢查 HTTPS 憑證。';
+     return '連線或儲存失敗：${error.runtimeType}';
+--- a/test/webdav_media_source_adapter_test.dart
++++ b/test/webdav_media_source_adapter_test.dart
+@@ -264,6 +264,31 @@
+       expect(capabilities.canRead, isTrue);
+       expect(capabilities.supportsRange, isTrue);
+       client.close();
+     });
++
++    test('keeps the source listable when the optional byte-range probe times out',
++        () async {
++      final client = MockClient((request) async {
++        if (request.method == 'PROPFIND') {
++          return http.Response(_listingXml, 207);
++        }
++        if (request.method == 'GET') {
++          return Future<http.Response>.delayed(
++            const Duration(milliseconds: 250),
++            () => http.Response(
++              '',
++              206,
++              headers: {'content-range': 'bytes 0-0/99'},
++            ),
++          );
++        }
++        fail('Unexpected method ${request.method}');
++      });
++      final adapter = WebDavMediaSourceAdapter(
++        client: client,
++        readCredentials: (_) async => null,
++        requestTimeout: const Duration(milliseconds: 25),
++      );
++
++      final capabilities = await adapter.testConnection(_config());
++      expect(capabilities.canList, isTrue);
++      expect(capabilities.canRead, isFalse);
++      expect(capabilities.supportsRange, isFalse);
++      client.close();
++    });
+   });
+ }
