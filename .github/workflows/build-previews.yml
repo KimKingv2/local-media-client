@@ -114,6 +114,26 @@ jobs:
           print("Verified native video playback patch.")
           PY
           patch -d app-src -p1 < /tmp/local-media-playback.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          import gzip
+          import hashlib
+
+          encoded = Path(
+              "source/patches/0007-fix-webdav-playback-scan-ui.patch.gz.b64"
+          ).read_text(encoding="ascii").strip()
+          compressed = base64.b64decode(encoded, validate=True)
+          expected = "7c70e4851e1af722866287498530286a880779081cb2f78c9c3e0591f922a3bb"
+          actual = hashlib.sha256(compressed).hexdigest()
+          if actual != expected:
+              raise SystemExit(f"Post-playback patch checksum mismatch: {actual}")
+          Path("/tmp/local-media-post-playback.patch").write_bytes(
+              gzip.decompress(compressed)
+          )
+          print("Verified post-playback WebDAV and UI patch.")
+          PY
+          patch -d app-src -p1 < /tmp/local-media-post-playback.patch
           find app-src -name '*.orig' -type f -delete
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_android_preview.sh
@@ -263,6 +283,26 @@ jobs:
           print("Verified native video playback patch.")
           PY
           patch -d app-src -p1 < /tmp/local-media-playback.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          import gzip
+          import hashlib
+
+          encoded = Path(
+              "source/patches/0007-fix-webdav-playback-scan-ui.patch.gz.b64"
+          ).read_text(encoding="ascii").strip()
+          compressed = base64.b64decode(encoded, validate=True)
+          expected = "7c70e4851e1af722866287498530286a880779081cb2f78c9c3e0591f922a3bb"
+          actual = hashlib.sha256(compressed).hexdigest()
+          if actual != expected:
+              raise SystemExit(f"Post-playback patch checksum mismatch: {actual}")
+          Path("/tmp/local-media-post-playback.patch").write_bytes(
+              gzip.decompress(compressed)
+          )
+          print("Verified post-playback WebDAV and UI patch.")
+          PY
+          patch -d app-src -p1 < /tmp/local-media-post-playback.patch
           find app-src -name '*.orig' -type f -delete
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_macos_preview.sh
