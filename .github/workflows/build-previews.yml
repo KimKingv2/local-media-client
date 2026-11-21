@@ -78,6 +78,20 @@ jobs:
           print("Verified and decompressed media catalogue patch.")
           PY
           patch -d app-src -p1 < /tmp/local-media-catalogue.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          import gzip
+          import hashlib
+
+          payload = Path("source/patches/0006-add-native-video-playback.diff.gz").read_bytes()
+          expected = "445fc644ec880a4025c3363947e8367e2293e0ded4643e9fe99886bb074bf88e"
+          actual = hashlib.sha256(payload).hexdigest()
+          if actual != expected:
+              raise SystemExit(f"Playback patch checksum mismatch: {actual}")
+          Path("/tmp/local-media-playback.patch").write_bytes(gzip.decompress(payload))
+          print("Verified native video playback patch.")
+          PY
+          patch -d app-src -p1 < /tmp/local-media-playback.patch
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_android_preview.sh
 
@@ -190,6 +204,20 @@ jobs:
           print("Verified and decompressed media catalogue patch.")
           PY
           patch -d app-src -p1 < /tmp/local-media-catalogue.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          import gzip
+          import hashlib
+
+          payload = Path("source/patches/0006-add-native-video-playback.diff.gz").read_bytes()
+          expected = "445fc644ec880a4025c3363947e8367e2293e0ded4643e9fe99886bb074bf88e"
+          actual = hashlib.sha256(payload).hexdigest()
+          if actual != expected:
+              raise SystemExit(f"Playback patch checksum mismatch: {actual}")
+          Path("/tmp/local-media-playback.patch").write_bytes(gzip.decompress(payload))
+          print("Verified native video playback patch.")
+          PY
+          patch -d app-src -p1 < /tmp/local-media-playback.patch
           test -f app-src/pubspec.yaml
           test -x app-src/tool/build_macos_preview.sh
 
