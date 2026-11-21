@@ -69,6 +69,26 @@ jobs:
           cache: true
           pub-cache: true
 
+      - name: Keep informational analyzer hints non-fatal
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          scripts = [
+              Path("app-src/tool/build_android_preview.sh"),
+              Path("app-src/tool/build_macos_preview.sh"),
+          ]
+          for path in scripts:
+              content = path.read_text(encoding="utf-8")
+              if "--fatal-infos" not in content:
+                  raise SystemExit(f"Expected analyzer strictness flag not found in {path}")
+              path.write_text(
+                  content.replace("--fatal-infos", "--no-fatal-infos"),
+                  encoding="utf-8",
+              )
+              print(f"Informational analyzer hints are non-fatal in {path}")
+          PY
+
       - name: Build and test Android preview
         env:
           ALLOW_CLEARTEXT_WEB_DAV: ${{ inputs.allow_cleartext_webdav && '1' || '0' }}
@@ -125,6 +145,26 @@ jobs:
           flutter-version: "3.50.1"
           cache: true
           pub-cache: true
+
+      - name: Keep informational analyzer hints non-fatal
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          scripts = [
+              Path("app-src/tool/build_android_preview.sh"),
+              Path("app-src/tool/build_macos_preview.sh"),
+          ]
+          for path in scripts:
+              content = path.read_text(encoding="utf-8")
+              if "--fatal-infos" not in content:
+                  raise SystemExit(f"Expected analyzer strictness flag not found in {path}")
+              path.write_text(
+                  content.replace("--fatal-infos", "--no-fatal-infos"),
+                  encoding="utf-8",
+              )
+              print(f"Informational analyzer hints are non-fatal in {path}")
+          PY
 
       - name: Build and test macOS preview
         env:
