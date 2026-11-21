@@ -65,7 +65,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           echo "===== WebDAV adapter ====="
-          sed -n '1,320p' app-src/lib/core/media_sources/webdav/webdav_media_source_adapter.dart
+          sed -n '1,520p' app-src/lib/core/media_sources/webdav/webdav_media_source_adapter.dart
           echo "===== WebDAV adapter test ====="
           sed -n '130,235p' app-src/test/webdav_media_source_adapter_test.dart
 
