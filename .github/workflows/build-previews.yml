@@ -80,15 +80,37 @@ jobs:
           patch -d app-src -p1 < /tmp/local-media-catalogue.patch
           python3 - <<'PY'
           from pathlib import Path
+          import base64
           import gzip
           import hashlib
 
-          payload = Path("source/patches/0006-add-native-video-playback.diff.gz").read_bytes()
+          folder = Path("source/patches/0006-parts")
+          expected_parts = {
+              "00.b64": "d0b082a479d62afc327b4fb3b3cb0c116312a350e84b005fa9f4b1d0e97c344b",
+              "01.b64": "6b118e7f83e645dfdc0c2a437baa87ec3f03a654d64e46936174bdf288333811",
+              "02.b64": "b14587aec08ed552b80b14b8f55098d21a8fe57dafa854475c39fa64265ee7a3",
+              "03.b64": "35a18c0479e17df88e62fb714d6ba6ed3f12a466ab03ff6d644b1d6fa7b0a3fb",
+              "04.b64": "08fd53b4430768a715ac068b337130bf4d81153112c4deeff400e9411df0015f",
+              "05.b64": "b033690c0f9f0f9ae21167f2d9721b96f64129bc9ebdd4f15bc57899cebc190c",
+              "06.b64": "a62ffb4fe8310831025d041b9f0f0f9421df6d15fc12ba7e3601f9e4b49bf6b9",
+              "07.b64": "0b05695c7f680375f2a2c3e55c3b3243b4d55bb9e3a28b4bd953a6c668eb70a2",
+          }
+          paths = sorted(folder.glob("*.b64"))
+          if [path.name for path in paths] != sorted(expected_parts):
+              raise SystemExit("Playback patch parts are incomplete or unexpected.")
+          encoded_parts = []
+          for path in paths:
+              raw = path.read_bytes()
+              actual = hashlib.sha256(raw).hexdigest()
+              if actual != expected_parts[path.name]:
+                  raise SystemExit(f"{path.name} checksum mismatch: {actual}")
+              encoded_parts.append(raw.decode("ascii").strip())
+          compressed = base64.b64decode("".join(encoded_parts), validate=True)
           expected = "445fc644ec880a4025c3363947e8367e2293e0ded4643e9fe99886bb074bf88e"
-          actual = hashlib.sha256(payload).hexdigest()
+          actual = hashlib.sha256(compressed).hexdigest()
           if actual != expected:
               raise SystemExit(f"Playback patch checksum mismatch: {actual}")
-          Path("/tmp/local-media-playback.patch").write_bytes(gzip.decompress(payload))
+          Path("/tmp/local-media-playback.patch").write_bytes(gzip.decompress(compressed))
           print("Verified native video playback patch.")
           PY
           patch -d app-src -p1 < /tmp/local-media-playback.patch
@@ -206,15 +228,37 @@ jobs:
           patch -d app-src -p1 < /tmp/local-media-catalogue.patch
           python3 - <<'PY'
           from pathlib import Path
+          import base64
           import gzip
           import hashlib
 
-          payload = Path("source/patches/0006-add-native-video-playback.diff.gz").read_bytes()
+          folder = Path("source/patches/0006-parts")
+          expected_parts = {
+              "00.b64": "d0b082a479d62afc327b4fb3b3cb0c116312a350e84b005fa9f4b1d0e97c344b",
+              "01.b64": "6b118e7f83e645dfdc0c2a437baa87ec3f03a654d64e46936174bdf288333811",
+              "02.b64": "b14587aec08ed552b80b14b8f55098d21a8fe57dafa854475c39fa64265ee7a3",
+              "03.b64": "35a18c0479e17df88e62fb714d6ba6ed3f12a466ab03ff6d644b1d6fa7b0a3fb",
+              "04.b64": "08fd53b4430768a715ac068b337130bf4d81153112c4deeff400e9411df0015f",
+              "05.b64": "b033690c0f9f0f9ae21167f2d9721b96f64129bc9ebdd4f15bc57899cebc190c",
+              "06.b64": "a62ffb4fe8310831025d041b9f0f0f9421df6d15fc12ba7e3601f9e4b49bf6b9",
+              "07.b64": "0b05695c7f680375f2a2c3e55c3b3243b4d55bb9e3a28b4bd953a6c668eb70a2",
+          }
+          paths = sorted(folder.glob("*.b64"))
+          if [path.name for path in paths] != sorted(expected_parts):
+              raise SystemExit("Playback patch parts are incomplete or unexpected.")
+          encoded_parts = []
+          for path in paths:
+              raw = path.read_bytes()
+              actual = hashlib.sha256(raw).hexdigest()
+              if actual != expected_parts[path.name]:
+                  raise SystemExit(f"{path.name} checksum mismatch: {actual}")
+              encoded_parts.append(raw.decode("ascii").strip())
+          compressed = base64.b64decode("".join(encoded_parts), validate=True)
           expected = "445fc644ec880a4025c3363947e8367e2293e0ded4643e9fe99886bb074bf88e"
-          actual = hashlib.sha256(payload).hexdigest()
+          actual = hashlib.sha256(compressed).hexdigest()
           if actual != expected:
               raise SystemExit(f"Playback patch checksum mismatch: {actual}")
-          Path("/tmp/local-media-playback.patch").write_bytes(gzip.decompress(payload))
+          Path("/tmp/local-media-playback.patch").write_bytes(gzip.decompress(compressed))
           print("Verified native video playback patch.")
           PY
           patch -d app-src -p1 < /tmp/local-media-playback.patch
