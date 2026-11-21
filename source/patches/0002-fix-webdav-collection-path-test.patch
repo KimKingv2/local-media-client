@@ -1,0 +1,15 @@
+--- a/test/webdav_media_source_adapter_test.dart
++++ b/test/webdav_media_source_adapter_test.dart
+@@ -1,7 +1,11 @@
+     test('preserves spaces and Unicode in collection paths', () async {
+       final client = MockClient((request) async {
+         expect(request.method, 'PROPFIND');
+-        expect(request.url.pathSegments.last, '劇集 類 ');
++        final nonEmptyPathSegments = request.url.pathSegments
++            .where((segment) => segment.isNotEmpty)
++            .toList();
++        expect(nonEmptyPathSegments.last, '劇集 類 ');
++        expect(request.url.path.endsWith('/'), isTrue);
+         return http.Response('''<?xml version="1.0"?>
+ <d:multistatus xmlns:d="DAV:">
+   <d:response><d:href>/dav/劇集%20類%20/</d:href>
