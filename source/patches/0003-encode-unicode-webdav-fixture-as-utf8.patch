@@ -1,0 +1,6 @@
+--- a/test/webdav_media_source_adapter_test.dart
++++ b/test/webdav_media_source_adapter_test.dart
+@@
+-</d:multistatus>''', 207);
++</d:multistatus>''', 207,
++          headers: {'content-type': 'application/xml; charset=utf-8'});
