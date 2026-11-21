@@ -86,14 +86,14 @@ jobs:
 
           folder = Path("source/patches/0006-parts")
           expected_parts = {
-              "00.b64": "04d70bf4080d27dcd449a4a752e8dcce42208bd478f0639f1d6c2910ada0e353",
-              "01.b64": "0238c887677401e4cd7542e811d6bad83cb24058eb4f3bbde8f00ffd4a4bdc59",
-              "02.b64": "a5e5c4bb1b82834f33131fe6caee2de53ea8a177f06ec6e4a2d3f655231bfbf0",
-              "03.b64": "e61660bf769843c34faf624e7ae27d9dc0686aab8434f6216c5ba40f7694713b",
-              "04.b64": "32a6a6615ae9a3a52cd5fb39a1f5f31b4bd1e7a6dc713adaa01a7cbf078380ea",
-              "05.b64": "473c6557cf4cc4c134abca2416fea64aa9cff682e3236b1901fbfd97ff57ec2e",
-              "06.b64": "cc2d52b8003fd6afa7f7c9643ce5bcddb339e618ff567a76f13fa210d65d146f",
-              "07.b64": "cb6afce1c791e945465ee51e72e52811ad69010d73348921834811f0a6e11880",
+              "00.b64": "f3b122c81ceaf663c481dc447bde5514ac3ab0c23d4a99280fef92044cafdc18",
+              "01.b64": "8b777241e8068a065f58779975f2722f355222b2010c99e9b46e1a80e26bd7e3",
+              "02.b64": "f8e8434e3f389b8f43657ebc6ade6254a260b1e3fd7bec116b3b63108cda2419",
+              "03.b64": "0cae7238a95f4815294330c07e03f7a345116c35cc264277bbf740508401d55f",
+              "04.b64": "07768e7738150e02087d7f10a1f54e5b9c5dceb25b2d9081eeda5950d1a65f1e",
+              "05.b64": "51dced49cb8ab3ce9e61f0167b2d77d7121140593fe88fd2415d4c2317c6cbc1",
+              "06.b64": "620793607775e33daf59666f4f8ae836fb788d9f4ea4da9c12eb524e2838327e",
+              "07.b64": "fbbc070ac33af1b4c69ac13251664946023ce5b9da2e9e40da10366c000c04c9",
           }
           paths = sorted(folder.glob("*.b64"))
           if [path.name for path in paths] != sorted(expected_parts):
@@ -106,7 +106,7 @@ jobs:
                   raise SystemExit(f"{path.name} checksum mismatch: {actual}")
               encoded_parts.append(raw.decode("ascii").strip())
           compressed = base64.b64decode("".join(encoded_parts), validate=True)
-          expected = "254a6d18ed0f0df47e4765d29f73b7e7faeee9786c1608fde1140556279a526e"
+          expected = "2ded2454c07b03baebdefef64dc481b4190bdc283f487760b92d9845e26d1b71"
           actual = hashlib.sha256(compressed).hexdigest()
           if actual != expected:
               raise SystemExit(f"Playback patch checksum mismatch: {actual}")
@@ -235,14 +235,14 @@ jobs:
 
           folder = Path("source/patches/0006-parts")
           expected_parts = {
-              "00.b64": "04d70bf4080d27dcd449a4a752e8dcce42208bd478f0639f1d6c2910ada0e353",
-              "01.b64": "0238c887677401e4cd7542e811d6bad83cb24058eb4f3bbde8f00ffd4a4bdc59",
-              "02.b64": "a5e5c4bb1b82834f33131fe6caee2de53ea8a177f06ec6e4a2d3f655231bfbf0",
-              "03.b64": "e61660bf769843c34faf624e7ae27d9dc0686aab8434f6216c5ba40f7694713b",
-              "04.b64": "32a6a6615ae9a3a52cd5fb39a1f5f31b4bd1e7a6dc713adaa01a7cbf078380ea",
-              "05.b64": "473c6557cf4cc4c134abca2416fea64aa9cff682e3236b1901fbfd97ff57ec2e",
-              "06.b64": "cc2d52b8003fd6afa7f7c9643ce5bcddb339e618ff567a76f13fa210d65d146f",
-              "07.b64": "cb6afce1c791e945465ee51e72e52811ad69010d73348921834811f0a6e11880",
+              "00.b64": "f3b122c81ceaf663c481dc447bde5514ac3ab0c23d4a99280fef92044cafdc18",
+              "01.b64": "8b777241e8068a065f58779975f2722f355222b2010c99e9b46e1a80e26bd7e3",
+              "02.b64": "f8e8434e3f389b8f43657ebc6ade6254a260b1e3fd7bec116b3b63108cda2419",
+              "03.b64": "0cae7238a95f4815294330c07e03f7a345116c35cc264277bbf740508401d55f",
+              "04.b64": "07768e7738150e02087d7f10a1f54e5b9c5dceb25b2d9081eeda5950d1a65f1e",
+              "05.b64": "51dced49cb8ab3ce9e61f0167b2d77d7121140593fe88fd2415d4c2317c6cbc1",
+              "06.b64": "620793607775e33daf59666f4f8ae836fb788d9f4ea4da9c12eb524e2838327e",
+              "07.b64": "fbbc070ac33af1b4c69ac13251664946023ce5b9da2e9e40da10366c000c04c9",
           }
           paths = sorted(folder.glob("*.b64"))
           if [path.name for path in paths] != sorted(expected_parts):
@@ -255,7 +255,7 @@ jobs:
                   raise SystemExit(f"{path.name} checksum mismatch: {actual}")
               encoded_parts.append(raw.decode("ascii").strip())
           compressed = base64.b64decode("".join(encoded_parts), validate=True)
-          expected = "254a6d18ed0f0df47e4765d29f73b7e7faeee9786c1608fde1140556279a526e"
+          expected = "2ded2454c07b03baebdefef64dc481b4190bdc283f487760b92d9845e26d1b71"
           actual = hashlib.sha256(compressed).hexdigest()
           if actual != expected:
               raise SystemExit(f"Playback patch checksum mismatch: {actual}")
