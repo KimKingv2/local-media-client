@@ -38,7 +38,23 @@ jobs:
       - name: Reconstruct and extract Flutter source
         run: |
           mkdir -p app-src
-          cat source/parts/*.b64 | tr -d '\r\n ' | base64 --decode > source/local-media-client-source.tar.gz
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          import hashlib
+          
+          parts = sorted(Path("source/parts").glob("*.b64"))
+          encoded = "".join(part.read_text(encoding="ascii").strip() for part in parts)
+          if len(encoded) != 82160:
+              raise SystemExit(f"Unexpected source payload length: {len(encoded)}")
+          archive = base64.b64decode(encoded, validate=True)
+          expected = "4d15686e484d8ded1b64d850ad8fce1827048c07ce20a997037b201598009bcf"
+          actual = hashlib.sha256(archive).hexdigest()
+          if actual != expected:
+              raise SystemExit(f"Source archive checksum mismatch: {actual}")
+          Path("source/local-media-client-source.tar.gz").write_bytes(archive)
+          print(f"Source archive verified: {len(archive)} bytes, SHA-256 {actual}")
+          PY
           gzip -t source/local-media-client-source.tar.gz
           tar -xzf source/local-media-client-source.tar.gz -C app-src
           test -f app-src/pubspec.yaml
@@ -78,7 +94,23 @@ jobs:
       - name: Reconstruct and extract Flutter source
         run: |
           mkdir -p app-src
-          cat source/parts/*.b64 | tr -d '\r\n ' | base64 --decode > source/local-media-client-source.tar.gz
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64
+          import hashlib
+          
+          parts = sorted(Path("source/parts").glob("*.b64"))
+          encoded = "".join(part.read_text(encoding="ascii").strip() for part in parts)
+          if len(encoded) != 82160:
+              raise SystemExit(f"Unexpected source payload length: {len(encoded)}")
+          archive = base64.b64decode(encoded, validate=True)
+          expected = "4d15686e484d8ded1b64d850ad8fce1827048c07ce20a997037b201598009bcf"
+          actual = hashlib.sha256(archive).hexdigest()
+          if actual != expected:
+              raise SystemExit(f"Source archive checksum mismatch: {actual}")
+          Path("source/local-media-client-source.tar.gz").write_bytes(archive)
+          print(f"Source archive verified: {len(archive)} bytes, SHA-256 {actual}")
+          PY
           gzip -t source/local-media-client-source.tar.gz
           tar -xzf source/local-media-client-source.tar.gz -C app-src
           test -f app-src/pubspec.yaml
