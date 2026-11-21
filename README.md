@@ -12,7 +12,7 @@ Implemented in the source bundle:
 - Anonymous and HTTP Basic authentication, with credentials stored in OS secure storage.
 - Recursive metadata-only WebDAV scanner for video, subtitle, artwork, and NFO/JSON sidecar files.
 - Android and macOS preview build scripts.
-- GitHub Actions workflow template.
+- GitHub Actions workflow for Android and macOS preview builds.
 
 Not implemented yet:
 - **Metadata scraping**: no TMDB/TVDB/other metadata-provider integration, automatic title matching, poster/backdrop downloading, cast/crew lookup, or manual-match UI.
@@ -24,11 +24,12 @@ The current scanner only indexes remote file paths and properties. It does not f
 
 ## Source code
 
-The complete Flutter source package is stored at `source/local-media-client-source.tar.gz`. Extract it to work with the Flutter project:
+The compressed Flutter source is stored as text-safe base64 parts in `source/parts/`. Reconstruct and extract it with:
 
 ```bash
-mkdir local-media-client
-tar -xzf source/local-media-client-source.tar.gz -C local-media-client
+cat source/parts/*.b64 | base64 --decode > /tmp/local-media-client-source.tar.gz
+mkdir -p local-media-client
+tar -xzf /tmp/local-media-client-source.tar.gz -C local-media-client
 cd local-media-client
 ```
 
@@ -36,7 +37,7 @@ The archive includes the project README, architecture documents, Dart source, te
 
 ## Build automation
 
-The GitHub Actions workflow in `.github/workflows/build-previews.yml` unpacks the source bundle, sets up Flutter, runs formatting, static analysis and tests, then builds:
+The GitHub Actions workflow in `.github/workflows/build-previews.yml` reconstructs the source archive, sets up Flutter, runs formatting, static analysis and tests, then builds:
 - Android preview APK for Android TV / tablet / phone.
 - macOS app preview ZIP.
 
