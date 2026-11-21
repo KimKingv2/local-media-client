@@ -1,0 +1,24 @@
+diff --git a/lib/features/sources/webdav_source_manager_page.dart b/lib/features/sources/webdav_source_manager_page.dart
+index 0000000..0000000 100644
+--- a/lib/features/sources/webdav_source_manager_page.dart
++++ b/lib/features/sources/webdav_source_manager_page.dart
+@@ -108,6 +108,18 @@ class _WebDavSourceManagerPageState extends State<WebDavSourceManagerPage> {
+     }
+   }
+ 
++  Future<void> _scanSource(MediaSourceRecord source) async {
++    if (!source.enabled) return;
++    await showDialog<void>(
++      context: context,
++      barrierDismissible: false,
++      builder: (_) => _WebDavScanDialog(
++        source: source,
++        vault: _vault,
++        database: LocalDatabase.instance.database,
++      ),
++    );
++  }
++
+   void _openBrowser(MediaSourceRecord source) {
+     Navigator.of(context).push(
+       MaterialPageRoute<void>(
