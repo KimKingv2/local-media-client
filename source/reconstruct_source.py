@@ -45,6 +45,7 @@ PATCH_0017_SHA256 = "c02c6638dd9bc9151cc8ef546a7d0e4c351d7c9e3f190b7cb697857f541
 PATCH_0018_SHA256 = "769700767b9cd505e2458bb46dd5572f296a08d050218c946e9b460ff9971757"
 PATCH_0019_SHA256 = "cfa462df5a93c6f045a87d1ee6b669a4733fbd5324a10c3c0c0a9b9374276f87"
 PATCH_0020_SHA256 = "e17a551c4b860bcc07185e51be11da5921d0c30571ece4c35c1f902a5534e209"
+PATCH_0021_SHA256 = "943fbc177902f5d659229a9d83d6681a657446cc7296896ac46bdb4a1325f427"
 
 
 def sha256(data: bytes) -> str:
@@ -244,6 +245,13 @@ def reconstruct(output: Path) -> None:
         "Remove unused sidecar path",
     )
     apply_patch(output, patch_0020, "0020 remove unused sidecar path")
+
+    patch_0021 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0021-sidecar-ci-diagnostics.patch.gz.b64",
+        PATCH_0021_SHA256,
+        "Sidecar CI diagnostics patch",
+    )
+    apply_patch(output, patch_0021, "0021 sidecar CI diagnostics")
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
