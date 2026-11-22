@@ -38,6 +38,7 @@ PATCH_0011_PART_SHA256 = {
 }
 PATCH_0012_SHA256 = "2ac5c4a1d53f83fb901360fe2cc9d65a7e852db7ed125fbdc1851d969c741011"
 PATCH_0013_SHA256 = "3923ae8af56820e11abf1e8bc351891197e8bfd05073b01358f634810c8576a3"
+PATCH_0014_SHA256 = "9d23c3f49ba34ccc88e892ebe54bde4fd4c05342d14a1497d78f5f5649395e7d"
 
 
 def sha256(data: bytes) -> str:
@@ -188,6 +189,13 @@ def reconstruct(output: Path) -> None:
         "Runtime compatibility and diagnostics patch",
     )
     apply_patch(output, patch_0013, "0013 runtime compatibility and diagnostics")
+
+    patch_0014 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0014-fix-proxy-promotion.patch.gz.b64",
+        PATCH_0014_SHA256,
+        "TMDB proxy nullable promotion fix",
+    )
+    apply_patch(output, patch_0014, "0014 TMDB proxy nullable promotion fix")
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
