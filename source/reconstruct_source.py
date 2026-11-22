@@ -30,7 +30,12 @@ PATCH_0007_SHA256 = "7c70e4851e1af722866287498530286a880779081cb2f78c9c3e0591f92
 PATCH_0008_SHA256 = "289ff2da09b28627bbc4b8f65870ef2b8cec01438d69dce99cd374fdfc36cf45"
 PATCH_0009_SHA256 = "d631d9d432da3df51a261e8cb1b96c7a31a41728ee8110ac65afb4de1320842c"
 PATCH_0010_SHA256 = "df26a6a718461ad4397b68b203d15bfc82a89373da2c2a4c4ab4a7d8ecb3d14a"
-PATCH_0011_SHA256 = "b520b6b2ffcff369c574c685528e542daa389f72998c3d15b3384ce255b37d69"
+PATCH_0011_PART_SHA256 = {
+    "00": "6945299547b6459658f014b47e4a6e9ad2c7d4c44c5fa480161b25eec3463f22",
+    "01": "0bade1d26e8275ed57b15a9e43834114a13d0a8f13f067f90686190f11f8c6b7",
+    "02": "556af48347572339e0e6865d1379df4514561948f1475d47eecb0011eb66d96c",
+    "03": "0dad3e374747c25949e61c858e0b1cd37437dbdbb531867c1f009dd85d3c92f6",
+}
 
 
 def sha256(data: bytes) -> str:
@@ -155,12 +160,18 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0010, "0010 TMDB metadata scraping")
 
-    patch_0011 = verified_gzip_patch(
-        ROOT / "source" / "patches" / "0011-self-audit-reliability.patch.gz.b64",
-        PATCH_0011_SHA256,
-        "Self-audit reliability patch",
-    )
-    apply_patch(output, patch_0011, "0011 self-audit reliability")
+    for part_index, expected_sha in PATCH_0011_PART_SHA256.items():
+        suffix = part_index
+        patch_0011_part = verified_gzip_patch(
+            ROOT / "source" / "patches" / f"0011-self-audit-{suffix}.patch.gz.b64",
+            expected_sha,
+            f"Self-audit reliability patch part {suffix}",
+        )
+        apply_patch(
+            output,
+            patch_0011_part,
+            f"0011 self-audit reliability part {suffix}",
+        )
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
