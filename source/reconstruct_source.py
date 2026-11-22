@@ -44,6 +44,7 @@ PATCH_0016_SHA256 = "5f1cf59d1271d0e4b118d351025fd82f90028499d503d813a770dd7e9b7
 PATCH_0017_SHA256 = "c02c6638dd9bc9151cc8ef546a7d0e4c351d7c9e3f190b7cb697857f541f26e2"
 PATCH_0018_SHA256 = "769700767b9cd505e2458bb46dd5572f296a08d050218c946e9b460ff9971757"
 PATCH_0019_SHA256 = "cfa462df5a93c6f045a87d1ee6b669a4733fbd5324a10c3c0c0a9b9374276f87"
+PATCH_0020_SHA256 = "e17a551c4b860bcc07185e51be11da5921d0c30571ece4c35c1f902a5534e209"
 
 
 def sha256(data: bytes) -> str:
@@ -236,6 +237,13 @@ def reconstruct(output: Path) -> None:
         "Resolve scanned sidecars against persisted media items",
     )
     apply_patch(output, patch_0019, "0019 robust sidecar work resolution")
+
+    patch_0020 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0020-remove-unused-sidecar-path.patch.gz.b64",
+        PATCH_0020_SHA256,
+        "Remove unused sidecar path",
+    )
+    apply_patch(output, patch_0020, "0020 remove unused sidecar path")
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
