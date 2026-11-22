@@ -48,6 +48,7 @@ PATCH_0020_SHA256 = "e17a551c4b860bcc07185e51be11da5921d0c30571ece4c35c1f902a553
 PATCH_0021_SHA256 = "943fbc177902f5d659229a9d83d6681a657446cc7296896ac46bdb4a1325f427"
 PATCH_0022_SHA256 = "794dd243dbd232545a88d0f8878ce79bcc93ca115427d005aa0959d019077bd4"
 PATCH_0023_SHA256 = "bdd5ef6a493ab97759f76ee1c1cd80067391f60ad9e7934f1620748db93bd528"
+PATCH_0024_SHA256 = "60833cb0b43b568f2c99e4cadaa497831b8b794145a3540bc8bcd7df912dfa5e"
 
 
 def sha256(data: bytes) -> str:
@@ -268,6 +269,13 @@ def reconstruct(output: Path) -> None:
         "Fix UTF-8 NFO test fixture and remove diagnostics",
     )
     apply_patch(output, patch_0023, "0023 UTF-8 NFO test fixture")
+
+    patch_0024 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0024-reliable-partial-scan-index.patch.gz.b64",
+        PATCH_0024_SHA256,
+        "Reliable partial WebDAV scan indexing patch",
+    )
+    apply_patch(output, patch_0024, "0024 reliable partial scan indexing")
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
