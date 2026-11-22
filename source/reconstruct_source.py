@@ -28,6 +28,7 @@ PATCH_0006_PART_SHA256 = {
 PATCH_0006_SHA256 = "2ded2454c07b03baebdefef64dc481b4190bdc283f487760b92d9845e26d1b71"
 PATCH_0007_SHA256 = "7c70e4851e1af722866287498530286a880779081cb2f78c9c3e0591f922a3bb"
 PATCH_0008_SHA256 = "289ff2da09b28627bbc4b8f65870ef2b8cec01438d69dce99cd374fdfc36cf45"
+PATCH_0009_SHA256 = "d631d9d432da3df51a261e8cb1b96c7a31a41728ee8110ac65afb4de1320842c"
 
 
 def sha256(data: bytes) -> str:
@@ -137,6 +138,13 @@ def reconstruct(output: Path) -> None:
         "Directory listing timeout patch",
     )
     apply_patch(output, patch_0008, "0008 extended WebDAV directory listing timeout")
+
+    patch_0009 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0009-library-search-volume-resume.patch.gz.b64",
+        PATCH_0009_SHA256,
+        "Library, search and playback controls patch",
+    )
+    apply_patch(output, patch_0009, "0009 library, search and playback controls")
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
