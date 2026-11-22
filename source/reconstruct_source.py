@@ -41,6 +41,7 @@ PATCH_0013_SHA256 = "3923ae8af56820e11abf1e8bc351891197e8bfd05073b01358f634810c8
 PATCH_0014_SHA256 = "9d23c3f49ba34ccc88e892ebe54bde4fd4c05342d14a1497d78f5f5649395e7d"
 PATCH_0015_SHA256 = "c4a446aa1fab4eb5c1f883a207edeca38465ce14c86809b0f7c9d6228c82711b"
 PATCH_0016_SHA256 = "5f1cf59d1271d0e4b118d351025fd82f90028499d503d813a770dd7e9b7cc1bf"
+PATCH_0017_SHA256 = "c02c6638dd9bc9151cc8ef546a7d0e4c351d7c9e3f190b7cb697857f541f26e2"
 
 
 def sha256(data: bytes) -> str:
@@ -212,6 +213,13 @@ def reconstruct(output: Path) -> None:
         "Localized sidecar matching and proxy test fix",
     )
     apply_patch(output, patch_0016, "0016 localized sidecar matching and proxy test")
+
+    patch_0017 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0017-direct-tmdb-no-worker.patch.gz.b64",
+        PATCH_0017_SHA256,
+        "Direct-client TMDB API patch",
+    )
+    apply_patch(output, patch_0017, "0017 direct-client TMDB API")
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
