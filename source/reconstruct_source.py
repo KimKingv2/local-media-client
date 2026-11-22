@@ -278,11 +278,31 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0024, "0024 reliable partial scan indexing")
 
-    patch_0025 = verified_gzip_patch(
-        ROOT / "source" / "patches" / "0025-scan-resilience-self-audit.patch.gz.b64",
-        PATCH_0025_SHA256,
-        "Scan resilience and self-audit patch",
+    patch_0025_parts_dir = ROOT / "source" / "patches" / "0025-parts"
+    patch_0025_parts = sorted(patch_0025_parts_dir.glob("*.b64"))
+    expected_patch_0025_parts = ["00.b64", "01.b64", "02.b64", "03.b64"]
+    if [part.name for part in patch_0025_parts] != expected_patch_0025_parts:
+        raise SystemExit("Scan resilience patch parts are incomplete or unexpected.")
+    encoded_patch_0025 = "".join(
+        part.read_text(encoding="ascii").strip() for part in patch_0025_parts
     )
+    try:
+        compressed_patch_0025 = base64.b64decode(
+            encoded_patch_0025, validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid scan resilience patch base64: {exc}") from exc
+    actual_patch_0025_sha256 = sha256(compressed_patch_0025)
+    if actual_patch_0025_sha256 != PATCH_0025_SHA256:
+        raise SystemExit(
+            f"Scan resilience patch checksum mismatch: {actual_patch_0025_sha256}"
+        )
+    try:
+        patch_0025 = gzip.decompress(compressed_patch_0025)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(
+            f"Scan resilience patch is not a valid gzip payload: {exc}"
+        ) from exc
     apply_patch(output, patch_0025, "0025 scan resilience self-audit")
 
     for backup in output.rglob("*.orig"):
