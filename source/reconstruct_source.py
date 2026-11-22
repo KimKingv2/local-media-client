@@ -40,6 +40,7 @@ PATCH_0012_SHA256 = "2ac5c4a1d53f83fb901360fe2cc9d65a7e852db7ed125fbdc1851d969c7
 PATCH_0013_SHA256 = "3923ae8af56820e11abf1e8bc351891197e8bfd05073b01358f634810c8576a3"
 PATCH_0014_SHA256 = "9d23c3f49ba34ccc88e892ebe54bde4fd4c05342d14a1497d78f5f5649395e7d"
 PATCH_0015_SHA256 = "c4a446aa1fab4eb5c1f883a207edeca38465ce14c86809b0f7c9d6228c82711b"
+PATCH_0016_SHA256 = "5f1cf59d1271d0e4b118d351025fd82f90028499d503d813a770dd7e9b7cc1bf"
 
 
 def sha256(data: bytes) -> str:
@@ -204,6 +205,13 @@ def reconstruct(output: Path) -> None:
         "Scanner sidecar and TMDB network diagnostics patch",
     )
     apply_patch(output, patch_0015, "0015 scanner sidecar and TMDB network diagnostics")
+
+    patch_0016 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0016-sidecar-association-and-proxy-test.patch.gz.b64",
+        PATCH_0016_SHA256,
+        "Localized sidecar matching and proxy test fix",
+    )
+    apply_patch(output, patch_0016, "0016 localized sidecar matching and proxy test")
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
