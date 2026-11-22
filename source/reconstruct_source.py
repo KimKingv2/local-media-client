@@ -42,6 +42,7 @@ PATCH_0014_SHA256 = "9d23c3f49ba34ccc88e892ebe54bde4fd4c05342d14a1497d78f5f56493
 PATCH_0015_SHA256 = "c4a446aa1fab4eb5c1f883a207edeca38465ce14c86809b0f7c9d6228c82711b"
 PATCH_0016_SHA256 = "5f1cf59d1271d0e4b118d351025fd82f90028499d503d813a770dd7e9b7cc1bf"
 PATCH_0017_SHA256 = "c02c6638dd9bc9151cc8ef546a7d0e4c351d7c9e3f190b7cb697857f541f26e2"
+PATCH_0018_SHA256 = "769700767b9cd505e2458bb46dd5572f296a08d050218c946e9b460ff9971757"
 
 
 def sha256(data: bytes) -> str:
@@ -220,6 +221,13 @@ def reconstruct(output: Path) -> None:
         "Direct-client TMDB API patch",
     )
     apply_patch(output, patch_0017, "0017 direct-client TMDB API")
+
+    patch_0018 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0018-remove-provider-proxy.patch.gz.b64",
+        PATCH_0018_SHA256,
+        "Remove optional TMDB proxy support",
+    )
+    apply_patch(output, patch_0018, "0018 remove optional TMDB proxy support")
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
