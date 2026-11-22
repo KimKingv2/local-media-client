@@ -36,6 +36,7 @@ PATCH_0011_PART_SHA256 = {
     "02": "556af48347572339e0e6865d1379df4514561948f1475d47eecb0011eb66d96c",
     "03": "0dad3e374747c25949e61c858e0b1cd37437dbdbb531867c1f009dd85d3c92f6",
 }
+PATCH_0012_SHA256 = "2ac5c4a1d53f83fb901360fe2cc9d65a7e852db7ed125fbdc1851d969c741011"
 
 
 def sha256(data: bytes) -> str:
@@ -172,6 +173,13 @@ def reconstruct(output: Path) -> None:
             patch_0011_part,
             f"0011 self-audit reliability part {suffix}",
         )
+
+    patch_0012 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0012-fix-sidecar-nullable-casts.patch.gz.b64",
+        PATCH_0012_SHA256,
+        "Nullable cast parser fix",
+    )
+    apply_patch(output, patch_0012, "0012 nullable cast parser fix")
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
