@@ -13,7 +13,8 @@ Implemented:
 - Integrated MediaKit/libmpv video player and playback UI for Android and macOS. Playback resolves the WebDAV resource immediately before opening and streams from its HTTP(S) URL rather than copying the movie to local storage.
 - A one-byte HTTP Range GET probe for playback access and redirect resolution. The probe cancels the response body; it does not download the video. The client does not require HEAD to succeed.
 - Directory listing (WebDAV PROPFIND Depth: 1) has a separate 45-second timeout for slower remote-mounted storage; playback probes and single-resource requests retain the shorter 20-second timeout.
-- Local playback-position persistence and resume, plus play/pause and seeking controls.
+- Database-backed movie, series, and continue-watching pages, with episode drill-down for grouped series and title/file-name search. Anime navigation exists, but automatic anime classification is not yet implemented.
+- Local playback-position persistence and resume, including forced saves when the app moves into the background; play/pause, seeking, and a user-facing volume/mute control.
 - Selection of embedded audio and subtitle tracks. Same-name external SRT/ASS/SSA/VTT subtitles can be discovered from the parent WebDAV directory and loaded into memory (currently capped at 4 MiB per subtitle file).
 
 The playback engine and UI are integrated, and protocol/unit tests cover the WebDAV request flow. **The CI build does not connect to your live WebDAV server or prove end-to-end playback on every device/server combination.** Your OpenList/WebDAV server and actual media files still need device-level verification.
@@ -24,7 +25,6 @@ Not implemented or not production-ready:
 - Online metadata scraping or provider matching (TMDB/TVDB etc.), cast/crew details, and an automated poster/backdrop catalogue. NFO/JSON files are indexed but not yet parsed into provider metadata.
 - Server-side transcoding or compatibility conversion. The app requests the original remote media; playback depends on the source file, server HTTP behavior, and the bundled media engine.
 - Production-grade HDR, multichannel passthrough, codec tuning, and complete Android TV remote-control polish.
-- Dedicated in-player volume controls; the playback backend exposes a volume API, but the current player screen does not yet provide a user-facing volume slider or buttons.
 - A mature backup/sync system for the local catalogue and playback state across devices.
 
 ## Reconstruct the complete Flutter source
