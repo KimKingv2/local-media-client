@@ -1,6 +1,6 @@
 # Flutter source bundle
 
-The base Flutter project is stored as eight base64 text fragments in `parts/`. Tracked patch files under `patches/` add the WebDAV source, catalogue, native MediaKit playback integration, and later playback/scanner/UI, directory-timeout, media-library/search/player-control improvements, and TMDB metadata scraping.
+The base Flutter project is stored as eight base64 text fragments in `parts/`. Tracked patch files under `patches/` add the WebDAV source, catalogue, native MediaKit playback integration, and later playback/scanner/UI, directory-timeout, media-library/search/player-control improvements, TMDB metadata scraping, and scan/sidecar/artwork-cache reliability fixes.
 
 From the repository root, reconstruct the exact buildable source with:
 
