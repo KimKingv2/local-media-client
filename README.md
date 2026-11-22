@@ -8,7 +8,7 @@ A local-first media library client for Android TV, Android tablets, Android phon
 
 Implemented:
 - WebDAV source setup, connection testing, directory browsing, anonymous access, and HTTP Basic authentication. Saved credentials are kept in OS secure storage.
-- Recursive metadata-only scanning for video, subtitle, artwork, and NFO/JSON sidecar files. Scanning does not download video bodies.
+- Recursive metadata-only WebDAV scanning for video, subtitle, artwork, and NFO/JSON sidecar files. Scanning does not download video bodies; a failed or cancelled scan does not replace the previous completed index. After a scan, the app can continue to metadata matching.
 - Conservative filename parsing and provisional local grouping for movies, series, seasons, and episodes. This is not provider-based metadata matching.
 - Integrated MediaKit/libmpv video player and playback UI for Android and macOS. Playback resolves the WebDAV resource immediately before opening and streams from its HTTP(S) URL rather than copying the movie to local storage.
 - A one-byte HTTP Range GET probe for playback access and redirect resolution. The probe cancels the response body; it does not download the video. The client does not require HEAD to succeed.
@@ -16,16 +16,19 @@ Implemented:
 - Database-backed movie, series, and continue-watching pages, with episode drill-down for grouped series and title/file-name search. Anime navigation exists, but automatic anime classification is not yet implemented.
 - Local playback-position persistence and resume, including forced saves when the app moves into the background; play/pause, seeking, and a user-facing volume/mute control.
 - Selection of embedded audio and subtitle tracks. Same-name external SRT/ASS/SSA/VTT subtitles can be discovered from the parent WebDAV directory and loaded into memory (currently capped at 4 MiB per subtitle file).
+- TMDB metadata search and manual matching for scanned movies and series. Configure a TMDB API Read Access Token in Settings → Metadata; the token is stored in OS secure storage and is sent only over HTTPS. Matching is saved locally with title, year, overview, genres, poster, and backdrop when available.
 
 The playback engine and UI are integrated, and protocol/unit tests cover the WebDAV request flow. **The CI build does not connect to your live WebDAV server or prove end-to-end playback on every device/server combination.** Your OpenList/WebDAV server and actual media files still need device-level verification.
 
 The Android APK and macOS app produced by this workflow are Flutter **debug builds**, intended for evaluation rather than production or store distribution. The Android APK is marked debuggable. The macOS workflow does not perform Developer ID signing or notarization.
 
 Not implemented or not production-ready:
-- Online metadata scraping or provider matching (TMDB/TVDB etc.), cast/crew details, and an automated poster/backdrop catalogue. NFO/JSON files are indexed but not yet parsed into provider metadata.
+- Automatic unattended metadata matching, TVDB provider support, cast/crew details, and a full editorial catalogue. The current TMDB workflow is manual candidate search and confirmation for movies and series. Anime-specific classification is not yet implemented. NFO/JSON sidecars are indexed as files but their contents are not yet parsed into provider metadata.
 - Server-side transcoding or compatibility conversion. The app requests the original remote media; playback depends on the source file, server HTTP behavior, and the bundled media engine.
 - Production-grade HDR, multichannel passthrough, codec tuning, and complete Android TV remote-control polish.
 - A mature backup/sync system for the local catalogue and playback state across devices.
+
+This product uses the TMDB API but is not endorsed or certified by TMDB.
 
 ## Reconstruct the complete Flutter source
 
