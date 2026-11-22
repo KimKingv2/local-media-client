@@ -50,6 +50,7 @@ PATCH_0022_SHA256 = "794dd243dbd232545a88d0f8878ce79bcc93ca115427d005aa0959d0190
 PATCH_0023_SHA256 = "bdd5ef6a493ab97759f76ee1c1cd80067391f60ad9e7934f1620748db93bd528"
 PATCH_0024_SHA256 = "60833cb0b43b568f2c99e4cadaa497831b8b794145a3540bc8bcd7df912dfa5e"
 PATCH_0025_SHA256 = "dc19106a89b6198762d8c1958ab84976238d4a0cb860023df66dc4c2f4cd560a"
+PATCH_0026_SHA256 = "339d52b208297366057d3e834a50b13175e8d7afaa8db812545f5e5201bda5d2"
 
 
 def sha256(data: bytes) -> str:
@@ -304,6 +305,13 @@ def reconstruct(output: Path) -> None:
             f"Scan resilience patch is not a valid gzip payload: {exc}"
         ) from exc
     apply_patch(output, patch_0025, "0025 scan resilience self-audit")
+
+    patch_0026 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0026-interrupted-scan-recovery.patch.gz.b64",
+        PATCH_0026_SHA256,
+        "Interrupted scan recovery patch",
+    )
+    apply_patch(output, patch_0026, "0026 interrupted scan recovery")
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
