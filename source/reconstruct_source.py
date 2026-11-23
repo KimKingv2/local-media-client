@@ -68,6 +68,21 @@ PATCH_0032_PART_SHA256 = {
     "03.b64": "f95862ca46c746c4a7095caea50ca5b4763d538e59f375088a436fd30874847b",
 }
 PATCH_0032_SHA256 = "9e48dc14e83505da8fe8c0879c37d2d1e1b6ab36fcd4114f1917bfd0ef9f585c"
+PATCH_0033_PART_SHA256 = {
+    "00.b64": "2614671d3febae58fc47dc5eb6759e1b062a7eb3faf13cffd27febaf871adb30",
+    "01.b64": "0f96ba579f6f3b7cf20adde67346f9f3eec665524ceab12d59a7fa3d385278af",
+    "02.b64": "fc4086e54aae52ff19a98e7bcb3e3a3374c9c15530422eecddf4e1521c35c8f4",
+    "03.b64": "634a00f028263d7092a16fdb66476795082d98ca9f5ee7d5d6203b3409272c9e",
+    "04.b64": "077a7a16267b62f84f2fb2cdd131619cb1c4653103f5324c9de07dfbf0b05efb",
+    "05.b64": "f4a6ef1cf27669f7ee4a8412583ce6a0612dfb53704f6dcb7b6e9f9bc87d02bf",
+    "06.b64": "f407b0f18db584ea1113c94277a7003579dcfd552edf2037ffe5568f53993cbe",
+    "07.b64": "6a97fb7ea25b48840241bdd5707c64c45578726651d157d8c17b17121c2d04ae",
+    "08.b64": "00934257dd7de1961d149d9c0b45dfb99bf7995f18941087941615a797ea0d2f",
+    "09.b64": "55b9453be4cafb290f20307b5d74c332a34a104b9c10c476c17971b1ab9ab337",
+    "10.b64": "49400ccfc664a3ad5bc1967fb3df23505ec72b9c049dab400a78b7f5e0e0b17d",
+    "11.b64": "fc6c1a28d07ccb48f6d6747ff4fcb7f4b7c170398831e8e4e124b8fb8dd8e0ab",
+}
+PATCH_0033_SHA256 = "db85fa8c12f3f92de8410d211b97b8d93ba634fa763dd266d5cfca032d7db7ed"
 
 
 def sha256(data: bytes) -> str:
@@ -417,6 +432,37 @@ def reconstruct(output: Path) -> None:
             f"WebDAV artwork cache patch is not a valid gzip payload: {exc}"
         ) from exc
     apply_patch(output, patch_0032, "0032 persistent WebDAV artwork cache")
+
+    patch_0033_parts_dir = ROOT / "source" / "patches" / "0033-parts"
+    patch_0033_parts = sorted(patch_0033_parts_dir.glob("*.b64"))
+    if [part.name for part in patch_0033_parts] != sorted(PATCH_0033_PART_SHA256):
+        raise SystemExit("Portable scrape-cache backup patch parts are incomplete or unexpected.")
+    encoded_patch_0033 = []
+    for part in patch_0033_parts:
+        raw = part.read_bytes()
+        actual = sha256(raw)
+        if actual != PATCH_0033_PART_SHA256[part.name]:
+            raise SystemExit(f"{part.name} checksum mismatch: {actual}")
+        encoded_patch_0033.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0033 = base64.b64decode(
+            "".join(encoded_patch_0033), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid portable scrape-cache backup patch base64: {exc}") from exc
+    actual_patch_0033_sha256 = sha256(compressed_patch_0033)
+    if actual_patch_0033_sha256 != PATCH_0033_SHA256:
+        raise SystemExit(
+            f"Portable scrape-cache backup patch checksum mismatch: {actual_patch_0033_sha256}"
+        )
+    try:
+        patch_0033 = gzip.decompress(compressed_patch_0033)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(
+            f"Portable scrape-cache backup patch is not a valid gzip payload: {exc}"
+        ) from exc
+    apply_patch(output, patch_0033, "0033 portable scrape-cache backup")
+
 
 
 
