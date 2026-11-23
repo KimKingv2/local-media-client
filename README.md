@@ -13,7 +13,7 @@ Implemented:
 - Integrated MediaKit/libmpv video player and playback UI for Android and macOS. Playback resolves the WebDAV resource immediately before opening and streams from its HTTP(S) URL rather than copying the movie to local storage.
 - A one-byte HTTP Range GET probe for playback access and redirect resolution. The probe cancels the response body; it does not download the video. The client does not require HEAD to succeed.
 - Directory listing (WebDAV PROPFIND Depth: 1) has a separate 45-second timeout for slower remote-mounted storage; playback probes and single-resource requests retain the shorter 20-second timeout.
-- Database-backed movie, series, and continue-watching pages, with episode drill-down for grouped series and title/file-name search. Anime navigation exists, but automatic anime classification is not yet implemented.
+- Database-backed movie, series, and continue-watching pages, with episode drill-down for grouped series and title/file-name search. Series and episodic-anime detail pages show season cards; episode counts include only episodes with an indexed video file. Anime navigation exists, but automatic anime classification is not yet implemented.
 - Local playback-position persistence and resume, including forced saves when the app moves into the background; play/pause, seeking, and a user-facing volume/mute control.
 - Selection of embedded audio and subtitle tracks. Same-name external SRT/ASS/SSA/VTT subtitles can be discovered from the parent WebDAV directory and loaded into memory (currently capped at 4 MiB per subtitle file).
 - TMDB metadata search and manual matching for scanned movies, series, and explicitly classified anime.
