@@ -23,6 +23,8 @@ The playback engine and UI are integrated, and protocol/unit tests cover the Web
 
 The Android APK and macOS app produced by this workflow are Flutter **debug builds**, intended for evaluation rather than production or store distribution. The Android APK is marked debuggable. The macOS workflow does not perform Developer ID signing or notarization.
 
+Android preview signing is stable only when the repository Actions secret `ANDROID_DEBUG_KEYSTORE_BASE64` is configured. Without it, each hosted runner may generate a different debug certificate, and the APK may not update an existing installation. See **Keep Android preview signing stable** below.
+
 Not implemented or not production-ready:
 - Automatic unattended/batch TMDB matching, TVDB provider support, confidence-ranked auto matching, cast/crew details, season/episode-specific TMDB metadata, advanced content-aware anime classification, and full NFO/JSON standard coverage. Anime classification currently relies on explicit folder naming conventions. Sidecar parsing covers common Kodi NFO and simple JSON fields, not every NFO dialect. Backdrop images are cached locally but not yet used as a full-screen detail backdrop.
 - Server-side transcoding or compatibility conversion. The app requests the original remote media; playback depends on the source file, server HTTP behavior, and the bundled media engine.
@@ -61,6 +63,25 @@ ALLOW_CLEARTEXT_WEB_DAV=1 ./tool/build_android_preview.sh
 The workflow reconstructs the exact same source with checksum verification, runs platform-configuration tests, Flutter static analysis and Flutter tests, then builds Android and macOS previews. Successful APK/ZIP artifacts are attached to the workflow run.
 
 Push and pull-request builds default to HTTPS-only. To generate a preview for a plain-HTTP home-LAN WebDAV server, open GitHub Actions → **Build installable previews** → **Run workflow**, then explicitly enable `allow_cleartext_webdav`.
+
+## Keep Android preview signing stable
+
+To let future Android preview APKs update the same installed app, create a private debug keystore once on a trusted computer and store it as a GitHub Actions repository secret. Run this on macOS from the directory where you want to keep the keystore:
+
+```bash
+keytool -genkeypair -v \
+  -keystore local-media-debug.keystore \
+  -storepass android \
+  -alias androiddebugkey \
+  -keypass android \
+  -keyalg RSA -keysize 2048 -validity 10000 \
+  -dname "CN=Local Media Client"
+base64 -i local-media-debug.keystore | tr -d '\n'
+```
+
+Copy the base64 output into GitHub → **Settings → Secrets and variables → Actions → New repository secret**, named `ANDROID_DEBUG_KEYSTORE_BASE64`. Do not commit the keystore or its base64 contents to the repository. Keep a separate secure copy of the keystore: losing it means future builds cannot keep the same signing identity.
+
+After the secret is configured, subsequent Android preview builds reuse that signing certificate. This cannot recover the private debug keys from earlier hosted runs, so APKs from earlier runs may still require a database export and a fresh installation. The app's local SQLite backup/restore can help preserve the catalogue, but WebDAV passwords and TMDB tokens stored in secure storage must be entered again after reinstalling.
 
 ## Security note
 
