@@ -55,6 +55,7 @@ PATCH_0027_SHA256 = "358483ad63e238cd6212eb8fd380ff5938b43f5f269c5b01f3df217798b
 PATCH_0028_SHA256 = "f5df05cd3e6d0db7824cbb1d3874430e735476e488495365479249214634c31b"
 PATCH_0029_SHA256 = "530c3a044eeb27e0dea25ec801ba56f7dcb62fd3bd7f5a4f563b8464832e37eb"
 PATCH_0030_SHA256 = "d5c76ca9de459eb923e3f482233f1f572d1a0cf943c49ee0e4fdcc39415d8b2c"
+PATCH_0031_SHA256 = "2825d223ad685c4aada8914f65215c4991a1d02d8c6eddf62c29fa3e844fadd7"
 
 
 def sha256(data: bytes) -> str:
@@ -344,6 +345,14 @@ def reconstruct(output: Path) -> None:
         "Fix anime playable episode count query",
     )
     apply_patch(output, patch_0030, "0030 fix anime playable episode count query")
+
+    patch_0031 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0031-tinymm-sidecars-portable-backup.patch.gz.b64",
+        PATCH_0031_SHA256,
+        "TinyMediaManager Kodi sidecars, local artwork priority and portable cached-data backups",
+    )
+    apply_patch(output, patch_0031, "0031 TinyMediaManager sidecars and portable cached-data backup")
+
 
 
 
