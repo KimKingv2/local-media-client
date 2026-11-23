@@ -478,7 +478,15 @@ def reconstruct(output: Path) -> None:
         "      if (openedDatabase != null) await openedDatabase.close();"
     )
     if old_nullable_close in backup_source:
-        apply_patch(output, patch_0034, "0034 portable backup null-promotion analyzer fix")
+        backup_service.write_text(
+            backup_source.replace(
+                old_nullable_close,
+                "      await database.close();",
+                1,
+            ),
+            encoding="utf-8",
+        )
+        print("0034 portable backup null-promotion analyzer fix applied.")
     elif "      await database.close();" in backup_source:
         print("0034 portable backup null-promotion analyzer fix already present; skipped.")
     else:
