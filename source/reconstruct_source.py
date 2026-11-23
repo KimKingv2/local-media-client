@@ -55,6 +55,12 @@ PATCH_0027_SHA256 = "358483ad63e238cd6212eb8fd380ff5938b43f5f269c5b01f3df217798b
 PATCH_0028_SHA256 = "f5df05cd3e6d0db7824cbb1d3874430e735476e488495365479249214634c31b"
 PATCH_0029_SHA256 = "530c3a044eeb27e0dea25ec801ba56f7dcb62fd3bd7f5a4f563b8464832e37eb"
 PATCH_0030_SHA256 = "d5c76ca9de459eb923e3f482233f1f572d1a0cf943c49ee0e4fdcc39415d8b2c"
+PATCH_0031_PART_SHA256 = {
+    "00.b64": "b8e3b42ae32c7d23989bf6aac1503055e41a21cb8b957ee4688339ae91d54a5b",
+    "01.b64": "5f051f785821bd5ee5b1dfaa333956539f4d6d40577d45329ddb413bfd3c5dee",
+    "02.b64": "3424116f90e0b017cd711e8ab318248bfcedc8e94a2c2282a42d1d8f9e9eb44d",
+}
+PATCH_0031_SHA256 = "c037086044aea39d2f5ccce09fcab78b1a348c16998acfb916308d2a828f03d7"
 
 
 def sha256(data: bytes) -> str:
@@ -345,8 +351,35 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0030, "0030 fix anime playable episode count query")
 
-
-
+    patch_0031_parts_dir = ROOT / "source" / "patches" / "0031-parts"
+    patch_0031_parts = sorted(patch_0031_parts_dir.glob("*.b64"))
+    if [part.name for part in patch_0031_parts] != sorted(PATCH_0031_PART_SHA256):
+        raise SystemExit("TinyMediaManager metadata patch parts are incomplete or unexpected.")
+    encoded_patch_0031 = []
+    for part in patch_0031_parts:
+        raw = part.read_bytes()
+        actual = sha256(raw)
+        if actual != PATCH_0031_PART_SHA256[part.name]:
+            raise SystemExit(f"{part.name} checksum mismatch: {actual}")
+        encoded_patch_0031.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0031 = base64.b64decode(
+            "".join(encoded_patch_0031), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid TinyMediaManager metadata patch base64: {exc}") from exc
+    actual_patch_0031_sha256 = sha256(compressed_patch_0031)
+    if actual_patch_0031_sha256 != PATCH_0031_SHA256:
+        raise SystemExit(
+            f"TinyMediaManager metadata patch checksum mismatch: {actual_patch_0031_sha256}"
+        )
+    try:
+        patch_0031 = gzip.decompress(compressed_patch_0031)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(
+            f"TinyMediaManager metadata patch is not a valid gzip payload: {exc}"
+        ) from exc
+    apply_patch(output, patch_0031, "0031 TinyMediaManager NFO metadata priority")
 
 
 
