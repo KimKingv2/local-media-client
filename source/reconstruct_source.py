@@ -51,6 +51,7 @@ PATCH_0023_SHA256 = "bdd5ef6a493ab97759f76ee1c1cd80067391f60ad9e7934f1620748db93
 PATCH_0024_SHA256 = "60833cb0b43b568f2c99e4cadaa497831b8b794145a3540bc8bcd7df912dfa5e"
 PATCH_0025_SHA256 = "dc19106a89b6198762d8c1958ab84976238d4a0cb860023df66dc4c2f4cd560a"
 PATCH_0026_SHA256 = "339d52b208297366057d3e834a50b13175e8d7afaa8db812545f5e5201bda5d2"
+PATCH_0027_SHA256 = "91043e7829da9b6cb83260e209e69b3ec0e1d6659b0bf0e2c81e22dfeda71300"
 
 
 def sha256(data: bytes) -> str:
@@ -312,6 +313,13 @@ def reconstruct(output: Path) -> None:
         "Interrupted scan recovery patch",
     )
     apply_patch(output, patch_0026, "0026 interrupted scan recovery")
+
+    patch_0027 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0027-local-db-backup.patch.gz.b64",
+        PATCH_0027_SHA256,
+        "Local database backup and restore patch",
+    )
+    apply_patch(output, patch_0027, "0027 local database backup and restore")
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
