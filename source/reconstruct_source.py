@@ -562,6 +562,45 @@ def reconstruct(output: Path) -> None:
         ) from exc
     apply_patch(output, patch_0036, "0036 aspect ratio and subtitle appearance controls")
 
+    patch_0037_parts_dir = ROOT / "source" / "patches" / "0037-parts"
+    patch_0037_parts = sorted(patch_0037_parts_dir.glob("*.b64"))
+    expected_patch_0037_parts = [f"{index:02d}.b64" for index in range(6)]
+    if [part.name for part in patch_0037_parts] != expected_patch_0037_parts:
+        raise SystemExit("Persistent player preferences patch parts are incomplete or unexpected.")
+    encoded_patch_0037 = []
+    expected_patch_0037_part_sha256 = {
+        "00.b64": "c8adb85223c959876978e6a3a8aac7f499528b825b1517ba1f93d2d453f48184",
+        "01.b64": "3846dfa16476bdf2319b729431a514f87914a5a8d9606f7a3f904345f80dc3b6",
+        "02.b64": "601d13cc42b6ce90a5d46dcc36d0e54e88c37ed50c4f61e78a9b44899ae82cca",
+        "03.b64": "8409db4cd02ee4fcd5562f147c632854817288106bb38884ce3d170e7135cf5d",
+        "04.b64": "6570a3363300a4a647b99bd4b3680e1adbdaf00f9db7763eae255e52250dec2c",
+        "05.b64": "eb6bd526e560854322b29839e7e00d6c19023584e83b30a2a0627e477ba93f66",
+    }
+    for part in patch_0037_parts:
+        raw = part.read_bytes()
+        actual = sha256(raw)
+        if actual != expected_patch_0037_part_sha256[part.name]:
+            raise SystemExit(f"Persistent player preferences patch {part.name} checksum mismatch: {actual}")
+        encoded_patch_0037.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0037 = base64.b64decode(
+            "".join(encoded_patch_0037), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid persistent player preferences patch base64: {exc}") from exc
+    actual_patch_0037_sha256 = sha256(compressed_patch_0037)
+    if actual_patch_0037_sha256 != "61cc1f2cabdcae7996d8cc6bb1e7a976d3c105d19ae7f57f38455b59e9fea149":
+        raise SystemExit(
+            f"Persistent player preferences patch checksum mismatch: {actual_patch_0037_sha256}"
+        )
+    try:
+        patch_0037 = gzip.decompress(compressed_patch_0037)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(
+            f"Persistent player preferences patch is not a valid gzip payload: {exc}"
+        ) from exc
+    apply_patch(output, patch_0037, "0037 persistent player display preferences and keyboard controls")
+
 
 
 
