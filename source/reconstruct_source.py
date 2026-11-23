@@ -55,11 +55,6 @@ PATCH_0027_SHA256 = "358483ad63e238cd6212eb8fd380ff5938b43f5f269c5b01f3df217798b
 PATCH_0028_SHA256 = "f5df05cd3e6d0db7824cbb1d3874430e735476e488495365479249214634c31b"
 PATCH_0029_SHA256 = "530c3a044eeb27e0dea25ec801ba56f7dcb62fd3bd7f5a4f563b8464832e37eb"
 PATCH_0030_SHA256 = "d5c76ca9de459eb923e3f482233f1f572d1a0cf943c49ee0e4fdcc39415d8b2c"
-PATCH_0031_SHA256 = "2825d223ad685c4aada8914f65215c4991a1d02d8c6eddf62c29fa3e844fadd7"
-PATCH_0031_PART_SHA256 = {
-    "00.b64": "3e53b4b205e838c91ba2fa8cbb840c98e33b109bc049996e7fc962d163654991",
-    "01.b64": "b021b0126bec632f6b80d71943edd7898335227162974201c16cc42a7fa182ad",
-}
 
 
 def sha256(data: bytes) -> str:
@@ -350,26 +345,6 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0030, "0030 fix anime playable episode count query")
 
-    patch_0031_parts_dir = ROOT / "source" / "patches" / "0031-parts"
-    patch_0031_parts = sorted(patch_0031_parts_dir.glob("*.b64"))
-    if [part.name for part in patch_0031_parts] != ["00.b64", "01.b64"]:
-        raise SystemExit("TinyMediaManager/backup patch parts are incomplete or unexpected.")
-    encoded_patch_0031 = []
-    for part in patch_0031_parts:
-        raw = part.read_bytes()
-        actual = sha256(raw)
-        if actual != PATCH_0031_PART_SHA256[part.name]:
-            raise SystemExit(f"{part.name} checksum mismatch: {actual}")
-        encoded_patch_0031.append(raw.decode("ascii").strip())
-    try:
-        compressed_patch_0031 = base64.b64decode("".join(encoded_patch_0031), validate=True)
-        actual_patch_0031 = sha256(compressed_patch_0031)
-        if actual_patch_0031 != PATCH_0031_SHA256:
-            raise SystemExit(f"TinyMediaManager/backup patch checksum mismatch: {actual_patch_0031}")
-        patch_0031 = gzip.decompress(compressed_patch_0031)
-    except (ValueError, OSError, EOFError) as exc:
-        raise SystemExit(f"Invalid TinyMediaManager/backup patch payload: {exc}")
-    apply_patch(output, patch_0031, "0031 TinyMediaManager sidecars and portable cached-data backup")
 
 
 
