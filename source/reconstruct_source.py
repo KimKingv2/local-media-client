@@ -491,10 +491,10 @@ def reconstruct(output: Path) -> None:
         raise SystemExit("Player UI patch parts are incomplete or unexpected.")
     encoded_patch_0035 = []
     expected_patch_0035_part_sha256 = {
-        "00.b64": "f1c972f081d85200afb7f010aec85d127243b7db8b43ecd5306e758c3e7c1ad6",
-        "01.b64": "046c015771f2940c8f41db724d597e0323313a467e1b9d7af597e43a86915a70",
-        "02.b64": "234a5b12cf649225a24440a956916ad086c93711e4eba627d67ca116e3159e6",
-        "03.b64": "e715c6247e00ca51558976838cc2aa3149e38e5025dc3ba05fe755bb5cecb182",
+        "00.b64": "93d10863a42f4d7117322ee8593d6f0f1b046dbab1e0847af8a7d990cb094007",
+        "01.b64": "8791e7f949fb8ef2d0b8fe05ad2a7446842b68c692945abed9ca5b09ce04cc91",
+        "02.b64": "45ffc25911bd5cd369f801d92df3483f589c210504e1128f5d6e2e4b5d80f5f5",
+        "03.b64": "b741427940742195ff3bc1cb19378ae15dd9fe96fe1748d0245dd93530d7a2ea",
     }
     for part in patch_0035_parts:
         raw = part.read_bytes()
@@ -509,7 +509,7 @@ def reconstruct(output: Path) -> None:
     except ValueError as exc:
         raise SystemExit(f"Invalid player UI patch base64: {exc}") from exc
     actual_patch_0035_sha256 = sha256(compressed_patch_0035)
-    if actual_patch_0035_sha256 != "6c2c50f40af0f6a8916455521c4eeb6b54d3a297f3eafb8a0538ad12ffff2cea":
+    if actual_patch_0035_sha256 != "a038f7970d6d9b42e234427fb6578e4530f20ef37ec2f466bbc4c0efd2679317":
         raise SystemExit(
             f"Player UI patch checksum mismatch: {actual_patch_0035_sha256}"
         )
