@@ -61,6 +61,13 @@ PATCH_0031_PART_SHA256 = {
     "02.b64": "3424116f90e0b017cd711e8ab318248bfcedc8e94a2c2282a42d1d8f9e9eb44d",
 }
 PATCH_0031_SHA256 = "c037086044aea39d2f5ccce09fcab78b1a348c16998acfb916308d2a828f03d7"
+PATCH_0032_PART_SHA256 = {
+    "00.b64": "8bd26711bf4f9dba2ecea8d47ca1258be0cfca468b0e343a83bc351a140542f8",
+    "01.b64": "624c525c445b4d6c87c3866572950a7c5ae1771013faff37aca1a6ade1d02f7a",
+    "02.b64": "57e2074387e39b707ed4d923cf47e716e6d4a355e7209f42165ec9c73f782426",
+    "03.b64": "f95862ca46c746c4a7095caea50ca5b4763d538e59f375088a436fd30874847b",
+}
+PATCH_0032_SHA256 = "9e48dc14e83505da8fe8c0879c37d2d1e1b6ab36fcd4114f1917bfd0ef9f585c"
 
 
 def sha256(data: bytes) -> str:
@@ -380,6 +387,36 @@ def reconstruct(output: Path) -> None:
             f"TinyMediaManager metadata patch is not a valid gzip payload: {exc}"
         ) from exc
     apply_patch(output, patch_0031, "0031 TinyMediaManager NFO metadata priority")
+
+    patch_0032_parts_dir = ROOT / "source" / "patches" / "0032-parts"
+    patch_0032_parts = sorted(patch_0032_parts_dir.glob("*.b64"))
+    if [part.name for part in patch_0032_parts] != sorted(PATCH_0032_PART_SHA256):
+        raise SystemExit("WebDAV artwork cache patch parts are incomplete or unexpected.")
+    encoded_patch_0032 = []
+    for part in patch_0032_parts:
+        raw = part.read_bytes()
+        actual = sha256(raw)
+        if actual != PATCH_0032_PART_SHA256[part.name]:
+            raise SystemExit(f"{part.name} checksum mismatch: {actual}")
+        encoded_patch_0032.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0032 = base64.b64decode(
+            "".join(encoded_patch_0032), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid WebDAV artwork cache patch base64: {exc}") from exc
+    actual_patch_0032_sha256 = sha256(compressed_patch_0032)
+    if actual_patch_0032_sha256 != PATCH_0032_SHA256:
+        raise SystemExit(
+            f"WebDAV artwork cache patch checksum mismatch: {actual_patch_0032_sha256}"
+        )
+    try:
+        patch_0032 = gzip.decompress(compressed_patch_0032)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(
+            f"WebDAV artwork cache patch is not a valid gzip payload: {exc}"
+        ) from exc
+    apply_patch(output, patch_0032, "0032 persistent WebDAV artwork cache")
 
 
 
