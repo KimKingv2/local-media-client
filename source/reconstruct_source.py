@@ -463,12 +463,61 @@ def reconstruct(output: Path) -> None:
         ) from exc
     apply_patch(output, patch_0033, "0033 portable scrape-cache backup")
 
+    # Some patch-tool versions may already find the corrected close call in
+    # patch 0033's resulting source. Verify patch 0034 either way, then apply
+    # only when the old nullable temporary variable is still present.
     patch_0034 = verified_gzip_patch(
         ROOT / "source" / "patches" / "0034-fix-backup-null-promotion.patch.gz.b64",
         "a8274c27db57e587b6b131b15f40599ea68ad9c3a8184e0d497bbe326637797d",
         "Portable backup null-promotion analyzer fix",
     )
-    apply_patch(output, patch_0034, "0034 portable backup null-promotion analyzer fix")
+    backup_service = output / "lib" / "core" / "database" / "local_database_backup_service.dart"
+    backup_source = backup_service.read_text(encoding="utf-8")
+    old_nullable_close = (
+        "      final openedDatabase = database;\\n"
+        "      if (openedDatabase != null) await openedDatabase.close();"
+    )
+    if old_nullable_close in backup_source:
+        apply_patch(output, patch_0034, "0034 portable backup null-promotion analyzer fix")
+    elif "      await database.close();" in backup_source:
+        print("0034 portable backup null-promotion analyzer fix already present; skipped.")
+    else:
+        raise SystemExit("Backup database close block does not match a known 0034 state.")
+
+    patch_0035_parts_dir = ROOT / "source" / "patches" / "0035-parts"
+    patch_0035_parts = sorted(patch_0035_parts_dir.glob("*.b64"))
+    expected_patch_0035_parts = ["00.b64", "01.b64", "02.b64", "03.b64"]
+    if [part.name for part in patch_0035_parts] != expected_patch_0035_parts:
+        raise SystemExit("Player UI patch parts are incomplete or unexpected.")
+    encoded_patch_0035 = []
+    expected_patch_0035_part_sha256 = {
+        "00.b64": "f1c972f081d85200afb7f010aec85d127243b7db8b43ecd5306e758c3e7c1ad6",
+        "01.b64": "046c015771f2940c8f41db724d597e0323313a467e1b9d7af597e43a86915a70",
+        "02.b64": "234a5b12cf649225a24440a956916ad086c93711e4eba627d67ca116e3159e6",
+        "03.b64": "e715c6247e00ca51558976838cc2aa3149e38e5025dc3ba05fe755bb5cecb182",
+    }
+    for part in patch_0035_parts:
+        raw = part.read_bytes()
+        actual = sha256(raw)
+        if actual != expected_patch_0035_part_sha256[part.name]:
+            raise SystemExit(f"Player UI patch {part.name} checksum mismatch: {actual}")
+        encoded_patch_0035.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0035 = base64.b64decode(
+            "".join(encoded_patch_0035), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid player UI patch base64: {exc}") from exc
+    actual_patch_0035_sha256 = sha256(compressed_patch_0035)
+    if actual_patch_0035_sha256 != "6c2c50f40af0f6a8916455521c4eeb6b54d3a297f3eafb8a0538ad12ffff2cea":
+        raise SystemExit(
+            f"Player UI patch checksum mismatch: {actual_patch_0035_sha256}"
+        )
+    try:
+        patch_0035 = gzip.decompress(compressed_patch_0035)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(f"Player UI patch is not a valid gzip payload: {exc}") from exc
+    apply_patch(output, patch_0035, "0035 richer player controls and settings panel")
 
 
 
