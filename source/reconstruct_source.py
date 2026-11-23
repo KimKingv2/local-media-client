@@ -474,7 +474,7 @@ def reconstruct(output: Path) -> None:
     backup_service = output / "lib" / "core" / "database" / "local_database_backup_service.dart"
     backup_source = backup_service.read_text(encoding="utf-8")
     old_nullable_close = (
-        "      final openedDatabase = database;\\n"
+        "      final openedDatabase = database;\n"
         "      if (openedDatabase != null) await openedDatabase.close();"
     )
     if old_nullable_close in backup_source:
