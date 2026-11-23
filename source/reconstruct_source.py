@@ -527,6 +527,41 @@ def reconstruct(output: Path) -> None:
         raise SystemExit(f"Player UI patch is not a valid gzip payload: {exc}") from exc
     apply_patch(output, patch_0035, "0035 richer player controls and settings panel")
 
+    patch_0036_parts_dir = ROOT / "source" / "patches" / "0036-parts"
+    patch_0036_parts = sorted(patch_0036_parts_dir.glob("*.b64"))
+    expected_patch_0036_parts = ["00.b64", "01.b64"]
+    if [part.name for part in patch_0036_parts] != expected_patch_0036_parts:
+        raise SystemExit("Player display settings patch parts are incomplete or unexpected.")
+    encoded_patch_0036 = []
+    expected_patch_0036_part_sha256 = {
+        "00.b64": "d63aaa32fb95f12a070094b2b087e53ad88c3fbec19cc15efb2069c0d7b4619d",
+        "01.b64": "b4b93a2558022fd68071f43222038561195cd199f27219fc2356bedac207f3b6",
+    }
+    for part in patch_0036_parts:
+        raw = part.read_bytes()
+        actual = sha256(raw)
+        if actual != expected_patch_0036_part_sha256[part.name]:
+            raise SystemExit(f"Player display settings patch {part.name} checksum mismatch: {actual}")
+        encoded_patch_0036.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0036 = base64.b64decode(
+            "".join(encoded_patch_0036), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid player display settings patch base64: {exc}") from exc
+    actual_patch_0036_sha256 = sha256(compressed_patch_0036)
+    if actual_patch_0036_sha256 != "73cccc5c3ef5caacf86597e34c13aaef69aff2e828525d696208e9eed88957d1":
+        raise SystemExit(
+            f"Player display settings patch checksum mismatch: {actual_patch_0036_sha256}"
+        )
+    try:
+        patch_0036 = gzip.decompress(compressed_patch_0036)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(
+            f"Player display settings patch is not a valid gzip payload: {exc}"
+        ) from exc
+    apply_patch(output, patch_0036, "0036 aspect ratio and subtitle appearance controls")
+
 
 
 
