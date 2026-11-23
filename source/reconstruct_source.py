@@ -52,6 +52,7 @@ PATCH_0024_SHA256 = "60833cb0b43b568f2c99e4cadaa497831b8b794145a3540bc8bcd7df912
 PATCH_0025_SHA256 = "dc19106a89b6198762d8c1958ab84976238d4a0cb860023df66dc4c2f4cd560a"
 PATCH_0026_SHA256 = "339d52b208297366057d3e834a50b13175e8d7afaa8db812545f5e5201bda5d2"
 PATCH_0027_SHA256 = "358483ad63e238cd6212eb8fd380ff5938b43f5f269c5b01f3df217798bfc907"
+PATCH_0028_SHA256 = "f5df05cd3e6d0db7824cbb1d3874430e735476e488495365479249214634c31b"
 
 
 def sha256(data: bytes) -> str:
@@ -320,6 +321,14 @@ def reconstruct(output: Path) -> None:
         "Local database backup and restore patch",
     )
     apply_patch(output, patch_0027, "0027 local database backup and restore")
+
+    patch_0028 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0028-season-cards-for-series-anime.patch.gz.b64",
+        PATCH_0028_SHA256,
+        "Season cards for series and episodic anime",
+    )
+    apply_patch(output, patch_0028, "0028 season cards for series and episodic anime")
+
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
