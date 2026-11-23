@@ -463,6 +463,13 @@ def reconstruct(output: Path) -> None:
         ) from exc
     apply_patch(output, patch_0033, "0033 portable scrape-cache backup")
 
+    patch_0034 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0034-fix-backup-null-promotion.patch.gz.b64",
+        "a8274c27db57e587b6b131b15f40599ea68ad9c3a8184e0d497bbe326637797d",
+        "Portable backup null-promotion analyzer fix",
+    )
+    apply_patch(output, patch_0034, "0034 portable backup null-promotion analyzer fix")
+
 
 
 
