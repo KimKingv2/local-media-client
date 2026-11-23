@@ -601,6 +601,13 @@ def reconstruct(output: Path) -> None:
         ) from exc
     apply_patch(output, patch_0037, "0037 persistent player display preferences and keyboard controls")
 
+    patch_0038 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0038-player-platform-import.patch.gz.b64",
+        "bb783064ef38586054e47d843057e54f8f5759b7c12f8eab31d7df5fcc7ab0e7",
+        "Player platform import fix",
+    )
+    apply_patch(output, patch_0038, "0038 import Flutter platform target helpers")
+
 
 
 
