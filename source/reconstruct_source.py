@@ -54,6 +54,7 @@ PATCH_0026_SHA256 = "339d52b208297366057d3e834a50b13175e8d7afaa8db812545f5e5201b
 PATCH_0027_SHA256 = "358483ad63e238cd6212eb8fd380ff5938b43f5f269c5b01f3df217798bfc907"
 PATCH_0028_SHA256 = "f5df05cd3e6d0db7824cbb1d3874430e735476e488495365479249214634c31b"
 PATCH_0029_SHA256 = "530c3a044eeb27e0dea25ec801ba56f7dcb62fd3bd7f5a4f563b8464832e37eb"
+PATCH_0030_SHA256 = "d5c76ca9de459eb923e3f482233f1f572d1a0cf943c49ee0e4fdcc39415d8b2c"
 
 
 def sha256(data: bytes) -> str:
@@ -336,6 +337,14 @@ def reconstruct(output: Path) -> None:
         "Playable episode counts for series and anime library entries",
     )
     apply_patch(output, patch_0029, "0029 playable episode counts")
+
+    patch_0030 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0030-fix-anime-count-query.patch.gz.b64",
+        PATCH_0030_SHA256,
+        "Fix anime playable episode count query",
+    )
+    apply_patch(output, patch_0030, "0030 fix anime playable episode count query")
+
 
 
 
