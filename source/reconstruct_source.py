@@ -727,6 +727,13 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0044, "0044 player TV focus, seek direction, immersive back, and auto-hide")
 
+    patch_0045 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0045-player-dpad-focus-repeat-back.patch.gz.b64",
+        "418287c242a3341abb109194abd3ed8a8453a35c13a82518cd0cc95496b17263",
+        "Player D-pad focus, repeat, and back-key reliability",
+    )
+    apply_patch(output, patch_0045, "0045 player remote focus protection, long-select, and Go Back support")
+
 
 
 
