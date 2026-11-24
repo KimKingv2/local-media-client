@@ -658,8 +658,8 @@ patch_0040_parts_dir = ROOT / "source" / "patches" / "0040-parts"
     for part in patch_0040_parts:
         raw = part.read_bytes()
         # GitHub text writes can omit the final newline; normalize before hashing.
-        if not raw.endswith(b"\\n"):
-            raw += b"\\n"
+        if not raw.endswith(b"\n"):
+            raw += b"\n"
         actual = sha256(raw)
         if actual != expected_patch_0040_part_sha256[part.name]:
             raise SystemExit(f"Player gesture surface patch {part.name} checksum mismatch: {actual}")
