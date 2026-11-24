@@ -756,6 +756,13 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0048, "0048 coalesced watch-progress queue and flush before player exit")
 
+    patch_0049 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0049-player-exit-progress-guard.patch.gz.b64",
+        "2ab4e3ddce62101bb276cdd812fc96055667b819259c206017938b034487a1bb",
+        "Unified player exit routing through the watch-progress flush barrier",
+    )
+    apply_patch(output, patch_0049, "0049 route every player exit through progress flush")
+
 
 
 
