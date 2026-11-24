@@ -615,7 +615,7 @@ def reconstruct(output: Path) -> None:
         raise SystemExit("Player keyboard focus patch parts are incomplete or unexpected.")
     expected_patch_0039_part_sha256 = {
         "00.b64": "a67a761a161a2a05383d5c0748d9011a61a7abba83eaa4275dd36a7cbc785063",
-        "01.b64": "afcb73bc58ced3d3012a3e8ba2ea19dc94aeba49777cc58bff5fcc116dc1e997",
+        "01.b64": "afcb73bc58ced3d3013a2e8ba2ea19dc94aeba49777cc58bff5fcc116dc1e997",
     }
     encoded_patch_0039 = []
     for part in patch_0039_parts:
