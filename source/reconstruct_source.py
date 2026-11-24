@@ -706,6 +706,14 @@ def reconstruct(output: Path) -> None:
         raise SystemExit(f"Player gesture test patch is not a valid gzip payload: {exc}") from exc
     apply_patch(output, patch_0041, "0041 responsive gesture tests and debug-log cleanup")
 
+    patch_0042 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0042-player-dpad-navigation.patch.gz.b64",
+        "a1369d433d45ccbe95f010d3ddab5c668d8b8c5c3f81a0fd83077af5f1af339d",
+        "Player D-pad navigation and control focus memory",
+    )
+    apply_patch(output, patch_0042, "0042 player D-pad navigation and focus-aware control auto-hide")
+
+
 
 
 
