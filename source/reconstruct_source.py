@@ -713,6 +713,14 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0042, "0042 player D-pad navigation and focus-aware control auto-hide")
 
+    patch_0043 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0043-player-auto-hide-lint-fix.patch.gz.b64",
+        "f825a2c24336d11ebc6aea661d157849d75e87b6446d9eeb8198c772a32cb37b",
+        "Player control auto-hide guard formatting",
+    )
+    apply_patch(output, patch_0043, "0043 format player control auto-hide guard")
+
+
 
 
 
