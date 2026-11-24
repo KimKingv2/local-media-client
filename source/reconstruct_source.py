@@ -730,7 +730,7 @@ def reconstruct(output: Path) -> None:
     # Keep the remote-focus regression patch last so earlier patch history remains stable.
     patch_0045 = verified_gzip_patch(
         ROOT / "source" / "patches" / "0045-player-dpad-focus-repeat-back.patch.gz.b64",
-        "418287c242a3341abb109194abd3ed8a8453a35c13a82518cd0cc95496b17263",
+        "2af6b58fa62e55d1ac4627bb7c1eb60010360506793c204b6b33c2e214666748",
         "Player D-pad focus, repeat, and back-key reliability",
     )
     apply_patch(output, patch_0045, "0045 player remote focus protection, long-select, and Go Back support")
