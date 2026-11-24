@@ -735,6 +735,13 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0045, "0045 player remote focus protection, long-select, and Go Back support")
 
+    patch_0046 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0046-player-seek-queue.patch.gz.b64",
+        "955a382ea533452a4e7c34d43603ac25ddc00ed86556b3127f2ede655d597981",
+        "Serialized player seeking and remote-repeat reliability",
+    )
+    apply_patch(output, patch_0046, "0046 serialized remote seeks and optimistic playback position")
+
 
 
 
