@@ -620,6 +620,10 @@ def reconstruct(output: Path) -> None:
     encoded_patch_0039 = []
     for part in patch_0039_parts:
         raw = part.read_bytes()
+        # GitHub's contents writer may omit a final text newline. Normalize
+        # the checksum input so the stored patch chunks verify identically.
+        if not raw.endswith(b"\n"):
+            raw += b"\n"
         actual = sha256(raw)
         if actual != expected_patch_0039_part_sha256[part.name]:
             raise SystemExit(f"Player keyboard focus patch {part.name} checksum mismatch: {actual}")
