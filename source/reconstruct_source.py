@@ -608,7 +608,7 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0038, "0038 import Flutter platform target helpers")
 
-patch_0039_parts_dir = ROOT / "source" / "patches" / "0039-parts"
+    patch_0039_parts_dir = ROOT / "source" / "patches" / "0039-parts"
     patch_0039_parts = sorted(patch_0039_parts_dir.glob("*.b64"))
     expected_patch_0039_parts = ["00.b64", "01.b64"]
     if [part.name for part in patch_0039_parts] != expected_patch_0039_parts:
