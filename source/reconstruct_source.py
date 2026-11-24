@@ -645,6 +645,43 @@ def reconstruct(output: Path) -> None:
         raise SystemExit(f"Player keyboard focus patch is not a valid gzip payload: {exc}") from exc
     apply_patch(output, patch_0039, "0039 player keyboard focus and immersive lifecycle safety")
 
+patch_0040_parts_dir = ROOT / "source" / "patches" / "0040-parts"
+    patch_0040_parts = sorted(patch_0040_parts_dir.glob("*.b64"))
+    expected_patch_0040_parts = ["00.b64", "01.b64"]
+    if [part.name for part in patch_0040_parts] != expected_patch_0040_parts:
+        raise SystemExit("Player gesture surface patch parts are incomplete or unexpected.")
+    expected_patch_0040_part_sha256 = {
+        "00.b64": "30eaed160483928b9286f135d813153c487a6991fe124770a6aca0d55856766c",
+        "01.b64": "05d611c1ca674ac970b32e82ad3e9b4fb50fe12322a0b5dc38c4e70123f3bbb1",
+    }
+    encoded_patch_0040 = []
+    for part in patch_0040_parts:
+        raw = part.read_bytes()
+        # GitHub text writes can omit the final newline; normalize before hashing.
+        if not raw.endswith(b"\\n"):
+            raw += b"\\n"
+        actual = sha256(raw)
+        if actual != expected_patch_0040_part_sha256[part.name]:
+            raise SystemExit(f"Player gesture surface patch {part.name} checksum mismatch: {actual}")
+        encoded_patch_0040.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0040 = base64.b64decode(
+            "".join(encoded_patch_0040), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid player gesture surface patch base64: {exc}") from exc
+    actual_patch_0040_sha256 = sha256(compressed_patch_0040)
+    if actual_patch_0040_sha256 != "7e58f6511080071cd1171aa919cea5cda79beb01b431bb13253494299e50a0f3":
+        raise SystemExit(
+            f"Player gesture surface patch checksum mismatch: {actual_patch_0040_sha256}"
+        )
+    try:
+        patch_0040 = gzip.decompress(compressed_patch_0040)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(f"Player gesture surface patch is not a valid gzip payload: {exc}") from exc
+    apply_patch(output, patch_0040, "0040 deterministic single/double-tap player surface")
+
+
 
 
 
