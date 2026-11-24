@@ -749,6 +749,13 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0047, "0047 persist optimistic seek progress and clear resume at media start")
 
+    patch_0048 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0048-player-progress-flush-before-exit.patch.gz.b64",
+        "7dd166bd5d39162bc96c69c9a3ecfc621deac4596800b4d8e436cb36e818a569",
+        "Serialized watch-progress writes and awaited player exit flush",
+    )
+    apply_patch(output, patch_0048, "0048 coalesced watch-progress queue and flush before player exit")
+
 
 
 
