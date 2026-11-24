@@ -686,8 +686,8 @@ def reconstruct(output: Path) -> None:
     # temporary pointer diagnostics from the player widget.
     patch_0041_part = ROOT / "source" / "patches" / "0041-parts" / "00.b64"
     raw_patch_0041_part = patch_0041_part.read_bytes()
-    if not raw_patch_0041_part.endswith(b"\\n"):
-        raw_patch_0041_part += b"\\n"
+    if not raw_patch_0041_part.endswith(b"\n"):
+        raw_patch_0041_part += b"\n"
     actual_patch_0041_part_sha256 = sha256(raw_patch_0041_part)
     if actual_patch_0041_part_sha256 != "391a20c104e04de3cdd0b1f8caa41d635533eb7ea2d9e9bc355bc31dcb555bb6":
         raise SystemExit(f"Player gesture test patch part checksum mismatch: {actual_patch_0041_part_sha256}")
