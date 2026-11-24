@@ -742,6 +742,13 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0046, "0046 serialized remote seeks and optimistic playback position")
 
+    patch_0047 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0047-watch-progress-seek-reliability.patch.gz.b64",
+        "3a5f02e862c2b86ed21801caad8842a6f6fed6108890fd00e99fb5ff82e27222",
+        "Watch progress and optimistic seek persistence reliability",
+    )
+    apply_patch(output, patch_0047, "0047 persist optimistic seek progress and clear resume at media start")
+
 
 
 
