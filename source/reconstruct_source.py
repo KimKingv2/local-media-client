@@ -608,6 +608,40 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0038, "0038 import Flutter platform target helpers")
 
+patch_0039_parts_dir = ROOT / "source" / "patches" / "0039-parts"
+    patch_0039_parts = sorted(patch_0039_parts_dir.glob("*.b64"))
+    expected_patch_0039_parts = ["00.b64", "01.b64"]
+    if [part.name for part in patch_0039_parts] != expected_patch_0039_parts:
+        raise SystemExit("Player keyboard focus patch parts are incomplete or unexpected.")
+    expected_patch_0039_part_sha256 = {
+        "00.b64": "a67a761a161a2a05383d5c0748d9011a61a7abba83eaa4275dd36a7cbc785063",
+        "01.b64": "afcb73bc58ced3d3012a3e8ba2ea19dc94aeba49777cc58bff5fcc116dc1e997",
+    }
+    encoded_patch_0039 = []
+    for part in patch_0039_parts:
+        raw = part.read_bytes()
+        actual = sha256(raw)
+        if actual != expected_patch_0039_part_sha256[part.name]:
+            raise SystemExit(f"Player keyboard focus patch {part.name} checksum mismatch: {actual}")
+        encoded_patch_0039.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0039 = base64.b64decode(
+            "".join(encoded_patch_0039), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid player keyboard focus patch base64: {exc}") from exc
+    actual_patch_0039_sha256 = sha256(compressed_patch_0039)
+    if actual_patch_0039_sha256 != "cf949aab9ff06a6109be75379a0bbd5030f404ef672e14f021041fa4dc7e61d5":
+        raise SystemExit(
+            f"Player keyboard focus patch checksum mismatch: {actual_patch_0039_sha256}"
+        )
+    try:
+        patch_0039 = gzip.decompress(compressed_patch_0039)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(f"Player keyboard focus patch is not a valid gzip payload: {exc}") from exc
+    apply_patch(output, patch_0039, "0039 player keyboard focus and immersive lifecycle safety")
+
+
 
 
 
