@@ -720,6 +720,14 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0043, "0043 format player control auto-hide guard")
 
+    patch_0044 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0044-player-tv-focus-back-and-hide.patch.gz.b64",
+        "e668b2ecaf359f9984064a8dcf467fb36cf46a83764d883d9ce1bcb7c6dbfc6e",
+        "Player TV focus, back navigation, and auto-hide reliability",
+    )
+    apply_patch(output, patch_0044, "0044 player TV focus, seek direction, immersive back, and auto-hide")
+
+
 
 
 
