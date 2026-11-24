@@ -681,6 +681,32 @@ def reconstruct(output: Path) -> None:
         raise SystemExit(f"Player gesture surface patch is not a valid gzip payload: {exc}") from exc
     apply_patch(output, patch_0040, "0040 deterministic single/double-tap player surface")
 
+    # Patch 0041 corrects gesture tests to use the actual rendered surface size,
+    # verifies separate taps outside the double-tap radius, and removes
+    # temporary pointer diagnostics from the player widget.
+    patch_0041_part = ROOT / "source" / "patches" / "0041-parts" / "00.b64"
+    raw_patch_0041_part = patch_0041_part.read_bytes()
+    if not raw_patch_0041_part.endswith(b"\\n"):
+        raw_patch_0041_part += b"\\n"
+    actual_patch_0041_part_sha256 = sha256(raw_patch_0041_part)
+    if actual_patch_0041_part_sha256 != "391a20c104e04de3cdd0b1f8caa41d635533eb7ea2d9e9bc355bc31dcb555bb6":
+        raise SystemExit(f"Player gesture test patch part checksum mismatch: {actual_patch_0041_part_sha256}")
+    try:
+        compressed_patch_0041 = base64.b64decode(
+            raw_patch_0041_part.decode("ascii").strip(), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid player gesture test patch base64: {exc}") from exc
+    actual_patch_0041_sha256 = sha256(compressed_patch_0041)
+    if actual_patch_0041_sha256 != "ba469c9457b4a099f45df153ddd8c569b3af8df546ec18bb3275a47c48b99356":
+        raise SystemExit(f"Player gesture test patch checksum mismatch: {actual_patch_0041_sha256}")
+    try:
+        patch_0041 = gzip.decompress(compressed_patch_0041)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(f"Player gesture test patch is not a valid gzip payload: {exc}") from exc
+    apply_patch(output, patch_0041, "0041 responsive gesture tests and debug-log cleanup")
+
+
 
 
 
