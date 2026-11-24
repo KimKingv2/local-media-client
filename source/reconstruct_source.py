@@ -645,7 +645,7 @@ def reconstruct(output: Path) -> None:
         raise SystemExit(f"Player keyboard focus patch is not a valid gzip payload: {exc}") from exc
     apply_patch(output, patch_0039, "0039 player keyboard focus and immersive lifecycle safety")
 
-patch_0040_parts_dir = ROOT / "source" / "patches" / "0040-parts"
+    patch_0040_parts_dir = ROOT / "source" / "patches" / "0040-parts"
     patch_0040_parts = sorted(patch_0040_parts_dir.glob("*.b64"))
     expected_patch_0040_parts = ["00.b64", "01.b64"]
     if [part.name for part in patch_0040_parts] != expected_patch_0040_parts:
