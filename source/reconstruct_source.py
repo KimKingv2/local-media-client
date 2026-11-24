@@ -651,8 +651,8 @@ def reconstruct(output: Path) -> None:
     if [part.name for part in patch_0040_parts] != expected_patch_0040_parts:
         raise SystemExit("Player gesture surface patch parts are incomplete or unexpected.")
     expected_patch_0040_part_sha256 = {
-        "00.b64": "5d92d747a4638d7e3b0df2a3a9e65f56e2377b29ead04e34d4c80a3b78999c3d",
-        "01.b64": "8d1114479b4b35cdfc16bcb6732747d1e54c6cec613a46fbdbe69ff8b5416fb1",
+        "00.b64": "d07e896ea6aa0a83a78e8250ec000ac4812a6a12d923a9e347eecd1f08a43e70",
+        "01.b64": "553da5c00dcf4d41a6c8323e9d43de99551ebeddb658307802e9a59f18366ccb",
     }
     encoded_patch_0040 = []
     for part in patch_0040_parts:
@@ -671,7 +671,7 @@ def reconstruct(output: Path) -> None:
     except ValueError as exc:
         raise SystemExit(f"Invalid player gesture surface patch base64: {exc}") from exc
     actual_patch_0040_sha256 = sha256(compressed_patch_0040)
-    if actual_patch_0040_sha256 != "8f6ce528a5999176bd9f55892358f867faf5283386ecda9bcb4c6adf96b2e913":
+    if actual_patch_0040_sha256 != "bb821e5c30e0fc5774557fde4ee38be5843f1fba0fbe6a69606594ad3e6cb885":
         raise SystemExit(
             f"Player gesture surface patch checksum mismatch: {actual_patch_0040_sha256}"
         )
