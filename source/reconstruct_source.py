@@ -777,6 +777,13 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0051, "0051 manage playback across inactive/background/resumed lifecycle")
 
+    patch_0052 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0052-player-lifecycle-duplicate-background-fix.patch.gz.b64",
+        "4eafea5c690f769ae3ebc3e5528b8b246cc496a6aa5d0c850e8b786e8f451de3",
+        "Preserve resume intent across duplicate background callbacks",
+    )
+    apply_patch(output, patch_0052, "0052 preserve resume intent across duplicate lifecycle background events")
+
 
 
 
