@@ -763,6 +763,13 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0049, "0049 route every player exit through progress flush")
 
+    patch_0050 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0050-player-display-settings-flush.patch.gz.b64",
+        "b4af8408643117e79b8b9421f352de060a2ceaee209e481ad28cc476e3204f9e",
+        "Coalesced display settings writes and awaited player-exit persistence",
+    )
+    apply_patch(output, patch_0050, "0050 flush final display settings before player exit")
+
 
 
 
