@@ -770,6 +770,13 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0050, "0050 flush final display settings before player exit")
 
+    patch_0051 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0051-player-lifecycle-coordinator.patch.gz.b64",
+        "8e2d1b74cbbff586915787794867e09cba19ae8b7e0cf701eff530420535dafa",
+        "Serialized playback lifecycle pause/resume and foreground restoration",
+    )
+    apply_patch(output, patch_0051, "0051 manage playback across inactive/background/resumed lifecycle")
+
 
 
 
