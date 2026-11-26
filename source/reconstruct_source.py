@@ -814,6 +814,13 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0055, "0055 synchronize initial lifecycle state in observer integration test")
 
+    patch_0056 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0056-lifecycle-pending-transition.patch.gz.b64",
+        "70ad9f7a5fa88849096041c165c724e6bdceef44182c3b7bb1c2bf149de0646e",
+        "Lifecycle binding transition completion and initial-resume semantics",
+    )
+    apply_patch(output, patch_0056, "0056 expose lifecycle transition completion and avoid synthetic initial resume")
+
     for backup in output.rglob("*.orig"):
         backup.unlink()
     if not (output / "pubspec.yaml").is_file():
