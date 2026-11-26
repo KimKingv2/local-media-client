@@ -793,6 +793,13 @@ def reconstruct(output: Path) -> None:
 
 
 
+    patch_0053 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0053-player-lifecycle-rebackground-race.patch.gz.b64",
+        "187c586d8fe9e3632705fc9474f7490c3695861c80a0f927ba22ebaadda19288",
+        "Preserve lifecycle playback intent across rapid re-background transitions",
+    )
+    apply_patch(output, patch_0053, "0053 preserve playback intent across rapid lifecycle re-background transitions")
+
     for backup in output.rglob("*.orig"):
         backup.unlink()
     if not (output / "pubspec.yaml").is_file():
