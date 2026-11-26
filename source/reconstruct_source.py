@@ -807,6 +807,13 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0054, "0054 extract Flutter lifecycle observer binding and test real state dispatch")
 
+    patch_0055 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0055-lifecycle-test-state-baseline.patch.gz.b64",
+        "c37b99e6e55f2309086a98d4229307e9af4da87fbc41d57778ebd640333339a8",
+        "Lifecycle widget-test initial state synchronization",
+    )
+    apply_patch(output, patch_0055, "0055 synchronize initial lifecycle state in observer integration test")
+
     for backup in output.rglob("*.orig"):
         backup.unlink()
     if not (output / "pubspec.yaml").is_file():
