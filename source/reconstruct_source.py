@@ -800,6 +800,13 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0053, "0053 preserve playback intent across rapid lifecycle re-background transitions")
 
+    patch_0054 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0054-player-lifecycle-binding-integration.patch.gz.b64",
+        "280c93b2602cc4318a2969c7e36c74dcc7391e8d51f25ae3c06bb20e75634d78",
+        "Flutter lifecycle observer binding and integration tests",
+    )
+    apply_patch(output, patch_0054, "0054 extract Flutter lifecycle observer binding and test real state dispatch")
+
     for backup in output.rglob("*.orig"):
         backup.unlink()
     if not (output / "pubspec.yaml").is_file():
