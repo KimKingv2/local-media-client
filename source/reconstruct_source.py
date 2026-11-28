@@ -860,6 +860,13 @@ import 'package:flutter/widgets.dart';"""
     lifecycle_test = lifecycle_test.replace("      await tester.pump();" + chr(10), "")
     lifecycle_test_path.write_text(lifecycle_test, encoding="utf-8")
 
+    patch_0058 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0058-player-lifecycle-save-cycle.patch.gz.b64",
+        "018746a96c356c28ea67d928d7f323d13dee372cba377ce6548cea19df370de0",
+        "Fresh state persistence for each foreground/background lifecycle cycle",
+    )
+    apply_patch(output, patch_0058, "0058 persist latest player state after every foreground return and re-background")
+
     for backup in output.rglob("*.orig"):
         backup.unlink()
     if not (output / "pubspec.yaml").is_file():
