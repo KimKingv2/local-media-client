@@ -821,6 +821,13 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0056, "0056 expose lifecycle transition completion and avoid synthetic initial resume")
 
+    patch_0057 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0057-lifecycle-background-safe-test-dispatch.patch.gz.b64",
+        "22066a4f8dc7cc7f27fc6b320edb50dd06b2db33ba689f587c3c8bc51c58e58d",
+        "Background-safe Flutter lifecycle observer test dispatch",
+    )
+    apply_patch(output, patch_0057, "0057 dispatch lifecycle test states without hidden-frame pumping")
+
     for backup in output.rglob("*.orig"):
         backup.unlink()
     if not (output / "pubspec.yaml").is_file():
