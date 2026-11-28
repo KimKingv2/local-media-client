@@ -821,12 +821,44 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0056, "0056 expose lifecycle transition completion and avoid synthetic initial resume")
 
-    patch_0057 = verified_gzip_patch(
-        ROOT / "source" / "patches" / "0057-lifecycle-background-safe-test-dispatch.patch.gz.b64",
-        "22066a4f8dc7cc7f27fc6b320edb50dd06b2db33ba689f587c3c8bc51c58e58d",
-        "Background-safe Flutter lifecycle observer test dispatch",
-    )
-    apply_patch(output, patch_0057, "0057 dispatch lifecycle test states without hidden-frame pumping")
+    # Normalize the lifecycle widget-test driver after patch 0056. Do not
+    # pump a frame while the app is hidden/paused: Flutter disables frame
+    # scheduling in those states. Dispatch through the binding's lifecycle
+    # observer entry point so tests exercise the same WidgetsBinding observers.
+    lifecycle_test_path = output / "test" / "player_lifecycle_binding_test.dart"
+    lifecycle_test = lifecycle_test_path.read_text(encoding="utf-8")
+    old_lifecycle_helper = """import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';"""
+    new_lifecycle_helper = """import 'package:flutter/widgets.dart';"""
+    if old_lifecycle_helper not in lifecycle_test:
+        raise SystemExit("Lifecycle widget-test imports do not match the expected 0056 source.")
+    lifecycle_test = lifecycle_test.replace(old_lifecycle_helper, new_lifecycle_helper, 1)
+    old_lifecycle_helper = """Future<void> sendLifecycleState(
+  WidgetTester tester,
+  AppLifecycleState state,
+) async {
+  final message = const StringCodec().encodeMessage(state.toString());
+  tester.binding.channelBuffers.push(
+    SystemChannels.lifecycle.name,
+    message,
+    (_) {},
+  );
+  await tester.pump();
+}"""
+    new_lifecycle_helper = """void sendLifecycleState(
+  WidgetTester tester,
+  AppLifecycleState state,
+) {
+  // ignore: invalid_use_of_protected_member
+  tester.binding.handleAppLifecycleStateChanged(state);
+}"""
+    if old_lifecycle_helper not in lifecycle_test:
+        raise SystemExit("Lifecycle widget-test helper does not match the expected 0056 source.")
+    lifecycle_test = lifecycle_test.replace(old_lifecycle_helper, new_lifecycle_helper, 1)
+    lifecycle_test = lifecycle_test.replace("await sendLifecycleState(", "sendLifecycleState(")
+    lifecycle_test = lifecycle_test.replace("        await tester.pump();\\n", "")
+    lifecycle_test = lifecycle_test.replace("      await tester.pump();\\n", "")
+    lifecycle_test_path.write_text(lifecycle_test, encoding="utf-8")
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
