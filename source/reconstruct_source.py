@@ -856,8 +856,8 @@ import 'package:flutter/widgets.dart';"""
         raise SystemExit("Lifecycle widget-test helper does not match the expected 0056 source.")
     lifecycle_test = lifecycle_test.replace(old_lifecycle_helper, new_lifecycle_helper, 1)
     lifecycle_test = lifecycle_test.replace("await sendLifecycleState(", "sendLifecycleState(")
-    lifecycle_test = lifecycle_test.replace("        await tester.pump();\\n", "")
-    lifecycle_test = lifecycle_test.replace("      await tester.pump();\\n", "")
+    lifecycle_test = lifecycle_test.replace("        await tester.pump();" + chr(10), "")
+    lifecycle_test = lifecycle_test.replace("      await tester.pump();" + chr(10), "")
     lifecycle_test_path.write_text(lifecycle_test, encoding="utf-8")
 
     for backup in output.rglob("*.orig"):
