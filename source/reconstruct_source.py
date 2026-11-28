@@ -55,6 +55,34 @@ PATCH_0027_SHA256 = "358483ad63e238cd6212eb8fd380ff5938b43f5f269c5b01f3df217798b
 PATCH_0028_SHA256 = "f5df05cd3e6d0db7824cbb1d3874430e735476e488495365479249214634c31b"
 PATCH_0029_SHA256 = "530c3a044eeb27e0dea25ec801ba56f7dcb62fd3bd7f5a4f563b8464832e37eb"
 PATCH_0030_SHA256 = "d5c76ca9de459eb923e3f482233f1f572d1a0cf943c49ee0e4fdcc39415d8b2c"
+PATCH_0031_PART_SHA256 = {
+    "00.b64": "b8e3b42ae32c7d23989bf6aac1503055e41a21cb8b957ee4688339ae91d54a5b",
+    "01.b64": "5f051f785821bd5ee5b1dfaa333956539f4d6d40577d45329ddb413bfd3c5dee",
+    "02.b64": "3424116f90e0b017cd711e8ab318248bfcedc8e94a2c2282a42d1d8f9e9eb44d",
+}
+PATCH_0031_SHA256 = "c037086044aea39d2f5ccce09fcab78b1a348c16998acfb916308d2a828f03d7"
+PATCH_0032_PART_SHA256 = {
+    "00.b64": "8bd26711bf4f9dba2ecea8d47ca1258be0cfca468b0e343a83bc351a140542f8",
+    "01.b64": "624c525c445b4d6c87c3866572950a7c5ae1771013faff37aca1a6ade1d02f7a",
+    "02.b64": "57e2074387e39b707ed4d923cf47e716e6d4a355e7209f42165ec9c73f782426",
+    "03.b64": "f95862ca46c746c4a7095caea50ca5b4763d538e59f375088a436fd30874847b",
+}
+PATCH_0032_SHA256 = "9e48dc14e83505da8fe8c0879c37d2d1e1b6ab36fcd4114f1917bfd0ef9f585c"
+PATCH_0033_PART_SHA256 = {
+    "00.b64": "2614671d3febae58fc47dc5eb6759e1b062a7eb3faf13cffd27febaf871adb30",
+    "01.b64": "0f96ba579f6f3b7cf20adde67346f9f3eec665524ceab12d59a7fa3d385278af",
+    "02.b64": "fc4086e54aae52ff19a98e7bcb3e3a3374c9c15530422eecddf4e1521c35c8f4",
+    "03.b64": "634a00f028263d7092a16fdb66476795082d98ca9f5ee7d5d6203b3409272c9e",
+    "04.b64": "077a7a16267b62f84f2fb2cdd131619cb1c4653103f5324c9de07dfbf0b05efb",
+    "05.b64": "f4a6ef1cf27669f7ee4a8412583ce6a0612dfb53704f6dcb7b6e9f9bc87d02bf",
+    "06.b64": "f407b0f18db584ea1113c94277a7003579dcfd552edf2037ffe5568f53993cbe",
+    "07.b64": "6a97fb7ea25b48840241bdd5707c64c45578726651d157d8c17b17121c2d04ae",
+    "08.b64": "00934257dd7de1961d149d9c0b45dfb99bf7995f18941087941615a797ea0d2f",
+    "09.b64": "55b9453be4cafb290f20307b5d74c332a34a104b9c10c476c17971b1ab9ab337",
+    "10.b64": "49400ccfc664a3ad5bc1967fb3df23505ec72b9c049dab400a78b7f5e0e0b17d",
+    "11.b64": "fc6c1a28d07ccb48f6d6747ff4fcb7f4b7c170398831e8e4e124b8fb8dd8e0ab",
+}
+PATCH_0033_SHA256 = "db85fa8c12f3f92de8410d211b97b8d93ba634fa763dd266d5cfca032d7db7ed"
 
 
 def sha256(data: bytes) -> str:
@@ -345,10 +373,499 @@ def reconstruct(output: Path) -> None:
     )
     apply_patch(output, patch_0030, "0030 fix anime playable episode count query")
 
+    patch_0031_parts_dir = ROOT / "source" / "patches" / "0031-parts"
+    patch_0031_parts = sorted(patch_0031_parts_dir.glob("*.b64"))
+    if [part.name for part in patch_0031_parts] != sorted(PATCH_0031_PART_SHA256):
+        raise SystemExit("TinyMediaManager metadata patch parts are incomplete or unexpected.")
+    encoded_patch_0031 = []
+    for part in patch_0031_parts:
+        raw = part.read_bytes()
+        actual = sha256(raw)
+        if actual != PATCH_0031_PART_SHA256[part.name]:
+            raise SystemExit(f"{part.name} checksum mismatch: {actual}")
+        encoded_patch_0031.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0031 = base64.b64decode(
+            "".join(encoded_patch_0031), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid TinyMediaManager metadata patch base64: {exc}") from exc
+    actual_patch_0031_sha256 = sha256(compressed_patch_0031)
+    if actual_patch_0031_sha256 != PATCH_0031_SHA256:
+        raise SystemExit(
+            f"TinyMediaManager metadata patch checksum mismatch: {actual_patch_0031_sha256}"
+        )
+    try:
+        patch_0031 = gzip.decompress(compressed_patch_0031)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(
+            f"TinyMediaManager metadata patch is not a valid gzip payload: {exc}"
+        ) from exc
+    apply_patch(output, patch_0031, "0031 TinyMediaManager NFO metadata priority")
+
+    patch_0032_parts_dir = ROOT / "source" / "patches" / "0032-parts"
+    patch_0032_parts = sorted(patch_0032_parts_dir.glob("*.b64"))
+    if [part.name for part in patch_0032_parts] != sorted(PATCH_0032_PART_SHA256):
+        raise SystemExit("WebDAV artwork cache patch parts are incomplete or unexpected.")
+    encoded_patch_0032 = []
+    for part in patch_0032_parts:
+        raw = part.read_bytes()
+        actual = sha256(raw)
+        if actual != PATCH_0032_PART_SHA256[part.name]:
+            raise SystemExit(f"{part.name} checksum mismatch: {actual}")
+        encoded_patch_0032.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0032 = base64.b64decode(
+            "".join(encoded_patch_0032), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid WebDAV artwork cache patch base64: {exc}") from exc
+    actual_patch_0032_sha256 = sha256(compressed_patch_0032)
+    if actual_patch_0032_sha256 != PATCH_0032_SHA256:
+        raise SystemExit(
+            f"WebDAV artwork cache patch checksum mismatch: {actual_patch_0032_sha256}"
+        )
+    try:
+        patch_0032 = gzip.decompress(compressed_patch_0032)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(
+            f"WebDAV artwork cache patch is not a valid gzip payload: {exc}"
+        ) from exc
+    apply_patch(output, patch_0032, "0032 persistent WebDAV artwork cache")
+
+    patch_0033_parts_dir = ROOT / "source" / "patches" / "0033-parts"
+    patch_0033_parts = sorted(patch_0033_parts_dir.glob("*.b64"))
+    if [part.name for part in patch_0033_parts] != sorted(PATCH_0033_PART_SHA256):
+        raise SystemExit("Portable scrape-cache backup patch parts are incomplete or unexpected.")
+    encoded_patch_0033 = []
+    for part in patch_0033_parts:
+        raw = part.read_bytes()
+        actual = sha256(raw)
+        if actual != PATCH_0033_PART_SHA256[part.name]:
+            raise SystemExit(f"{part.name} checksum mismatch: {actual}")
+        encoded_patch_0033.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0033 = base64.b64decode(
+            "".join(encoded_patch_0033), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid portable scrape-cache backup patch base64: {exc}") from exc
+    actual_patch_0033_sha256 = sha256(compressed_patch_0033)
+    if actual_patch_0033_sha256 != PATCH_0033_SHA256:
+        raise SystemExit(
+            f"Portable scrape-cache backup patch checksum mismatch: {actual_patch_0033_sha256}"
+        )
+    try:
+        patch_0033 = gzip.decompress(compressed_patch_0033)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(
+            f"Portable scrape-cache backup patch is not a valid gzip payload: {exc}"
+        ) from exc
+    apply_patch(output, patch_0033, "0033 portable scrape-cache backup")
+
+    # Some patch-tool versions may already find the corrected close call in
+    # patch 0033's resulting source. Verify patch 0034 either way, then apply
+    # only when the old nullable temporary variable is still present.
+    patch_0034 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0034-fix-backup-null-promotion.patch.gz.b64",
+        "a8274c27db57e587b6b131b15f40599ea68ad9c3a8184e0d497bbe326637797d",
+        "Portable backup null-promotion analyzer fix",
+    )
+    backup_service = output / "lib" / "core" / "database" / "local_database_backup_service.dart"
+    backup_source = backup_service.read_text(encoding="utf-8")
+    old_nullable_close = (
+        "      final openedDatabase = database;\n"
+        "      if (openedDatabase != null) await openedDatabase.close();"
+    )
+    if old_nullable_close in backup_source:
+        backup_service.write_text(
+            backup_source.replace(
+                old_nullable_close,
+                "      await database.close();",
+                1,
+            ),
+            encoding="utf-8",
+        )
+        print("0034 portable backup null-promotion analyzer fix applied.")
+    elif "      await database.close();" in backup_source:
+        print("0034 portable backup null-promotion analyzer fix already present; skipped.")
+    else:
+        raise SystemExit("Backup database close block does not match a known 0034 state.")
+
+    patch_0035_parts_dir = ROOT / "source" / "patches" / "0035-parts"
+    patch_0035_parts = sorted(patch_0035_parts_dir.glob("*.b64"))
+    expected_patch_0035_parts = ["00.b64", "01.b64", "02.b64", "03.b64"]
+    if [part.name for part in patch_0035_parts] != expected_patch_0035_parts:
+        raise SystemExit("Player UI patch parts are incomplete or unexpected.")
+    encoded_patch_0035 = []
+    expected_patch_0035_part_sha256 = {
+        "00.b64": "93d10863a42f4d7117322ee8593d6f0f1b046dbab1e0847af8a7d990cb094007",
+        "01.b64": "8791e7f949fb8ef2d0b8fe05ad2a7446842b68c692945abed9ca5b09ce04cc91",
+        "02.b64": "45ffc25911bd5cd369f801d92df3483f589c210504e1128f5d6e2e4b5d80f5f5",
+        "03.b64": "b741427940742195ff3bc1cb19378ae15dd9fe96fe1748d0245dd93530d7a2ea",
+    }
+    for part in patch_0035_parts:
+        raw = part.read_bytes()
+        actual = sha256(raw)
+        if actual != expected_patch_0035_part_sha256[part.name]:
+            raise SystemExit(f"Player UI patch {part.name} checksum mismatch: {actual}")
+        encoded_patch_0035.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0035 = base64.b64decode(
+            "".join(encoded_patch_0035), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid player UI patch base64: {exc}") from exc
+    actual_patch_0035_sha256 = sha256(compressed_patch_0035)
+    if actual_patch_0035_sha256 != "a038f7970d6d9b42e234427fb6578e4530f20ef37ec2f466bbc4c0efd2679317":
+        raise SystemExit(
+            f"Player UI patch checksum mismatch: {actual_patch_0035_sha256}"
+        )
+    try:
+        patch_0035 = gzip.decompress(compressed_patch_0035)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(f"Player UI patch is not a valid gzip payload: {exc}") from exc
+    apply_patch(output, patch_0035, "0035 richer player controls and settings panel")
+
+    patch_0036_parts_dir = ROOT / "source" / "patches" / "0036-parts"
+    patch_0036_parts = sorted(patch_0036_parts_dir.glob("*.b64"))
+    expected_patch_0036_parts = ["00.b64", "01.b64"]
+    if [part.name for part in patch_0036_parts] != expected_patch_0036_parts:
+        raise SystemExit("Player display settings patch parts are incomplete or unexpected.")
+    encoded_patch_0036 = []
+    expected_patch_0036_part_sha256 = {
+        "00.b64": "d63aaa32fb95f12a070094b2b087e53ad88c3fbec19cc15efb2069c0d7b4619d",
+        "01.b64": "b4b93a2558022fd68071f43222038561195cd199f27219fc2356bedac207f3b6",
+    }
+    for part in patch_0036_parts:
+        raw = part.read_bytes()
+        actual = sha256(raw)
+        if actual != expected_patch_0036_part_sha256[part.name]:
+            raise SystemExit(f"Player display settings patch {part.name} checksum mismatch: {actual}")
+        encoded_patch_0036.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0036 = base64.b64decode(
+            "".join(encoded_patch_0036), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid player display settings patch base64: {exc}") from exc
+    actual_patch_0036_sha256 = sha256(compressed_patch_0036)
+    if actual_patch_0036_sha256 != "73cccc5c3ef5caacf86597e34c13aaef69aff2e828525d696208e9eed88957d1":
+        raise SystemExit(
+            f"Player display settings patch checksum mismatch: {actual_patch_0036_sha256}"
+        )
+    try:
+        patch_0036 = gzip.decompress(compressed_patch_0036)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(
+            f"Player display settings patch is not a valid gzip payload: {exc}"
+        ) from exc
+    apply_patch(output, patch_0036, "0036 aspect ratio and subtitle appearance controls")
+
+    patch_0037_parts_dir = ROOT / "source" / "patches" / "0037-parts"
+    patch_0037_parts = sorted(patch_0037_parts_dir.glob("*.b64"))
+    expected_patch_0037_parts = [f"{index:02d}.b64" for index in range(6)]
+    if [part.name for part in patch_0037_parts] != expected_patch_0037_parts:
+        raise SystemExit("Persistent player preferences patch parts are incomplete or unexpected.")
+    encoded_patch_0037 = []
+    expected_patch_0037_part_sha256 = {
+        "00.b64": "c8adb85223c959876978e6a3a8aac7f499528b825b1517ba1f93d2d453f48184",
+        "01.b64": "3846dfa16476bdf2319b729431a514f87914a5a8d9606f7a3f904345f80dc3b6",
+        "02.b64": "601d13cc42b6ce90a5d46dcc36d0e54e88c37ed50c4f61e78a9b44899ae82cca",
+        "03.b64": "8409db4cd02ee4fcd5562f147c632854817288106bb38884ce3d170e7135cf5d",
+        "04.b64": "6570a3363300a4a647b99bd4b3680e1adbdaf00f9db7763eae255e52250dec2c",
+        "05.b64": "eb6bd526e560854322b29839e7e00d6c19023584e83b30a2a0627e477ba93f66",
+    }
+    for part in patch_0037_parts:
+        raw = part.read_bytes()
+        actual = sha256(raw)
+        if actual != expected_patch_0037_part_sha256[part.name]:
+            raise SystemExit(f"Persistent player preferences patch {part.name} checksum mismatch: {actual}")
+        encoded_patch_0037.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0037 = base64.b64decode(
+            "".join(encoded_patch_0037), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid persistent player preferences patch base64: {exc}") from exc
+    actual_patch_0037_sha256 = sha256(compressed_patch_0037)
+    if actual_patch_0037_sha256 != "61cc1f2cabdcae7996d8cc6bb1e7a976d3c105d19ae7f57f38455b59e9fea149":
+        raise SystemExit(
+            f"Persistent player preferences patch checksum mismatch: {actual_patch_0037_sha256}"
+        )
+    try:
+        patch_0037 = gzip.decompress(compressed_patch_0037)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(
+            f"Persistent player preferences patch is not a valid gzip payload: {exc}"
+        ) from exc
+    apply_patch(output, patch_0037, "0037 persistent player display preferences and keyboard controls")
+
+    patch_0038 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0038-player-platform-import.patch.gz.b64",
+        "bb783064ef38586054e47d843057e54f8f5759b7c12f8eab31d7df5fcc7ab0e7",
+        "Player platform import fix",
+    )
+    apply_patch(output, patch_0038, "0038 import Flutter platform target helpers")
+
+    patch_0039_parts_dir = ROOT / "source" / "patches" / "0039-parts"
+    patch_0039_parts = sorted(patch_0039_parts_dir.glob("*.b64"))
+    expected_patch_0039_parts = ["00.b64", "01.b64"]
+    if [part.name for part in patch_0039_parts] != expected_patch_0039_parts:
+        raise SystemExit("Player keyboard focus patch parts are incomplete or unexpected.")
+    expected_patch_0039_part_sha256 = {
+        "00.b64": "a67a761a161a2a05383d5c0748d9011a61a7abba83eaa4275dd36a7cbc785063",
+        "01.b64": "afcb73bc58ced3d3013a2e8ba2ea19dc94aeba49777cc58bff5fcc116dc1e997",
+    }
+    encoded_patch_0039 = []
+    for part in patch_0039_parts:
+        raw = part.read_bytes()
+        # GitHub's contents writer may omit a final text newline. Normalize
+        # the checksum input so the stored patch chunks verify identically.
+        if not raw.endswith(b"\n"):
+            raw += b"\n"
+        actual = sha256(raw)
+        if actual != expected_patch_0039_part_sha256[part.name]:
+            raise SystemExit(f"Player keyboard focus patch {part.name} checksum mismatch: {actual}")
+        encoded_patch_0039.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0039 = base64.b64decode(
+            "".join(encoded_patch_0039), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid player keyboard focus patch base64: {exc}") from exc
+    actual_patch_0039_sha256 = sha256(compressed_patch_0039)
+    if actual_patch_0039_sha256 != "cf949aab9ff06a6109be75379a0bbd5030f404ef672e14f021041fa4dc7e61d5":
+        raise SystemExit(
+            f"Player keyboard focus patch checksum mismatch: {actual_patch_0039_sha256}"
+        )
+    try:
+        patch_0039 = gzip.decompress(compressed_patch_0039)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(f"Player keyboard focus patch is not a valid gzip payload: {exc}") from exc
+    apply_patch(output, patch_0039, "0039 player keyboard focus and immersive lifecycle safety")
+
+    patch_0040_parts_dir = ROOT / "source" / "patches" / "0040-parts"
+    patch_0040_parts = sorted(patch_0040_parts_dir.glob("*.b64"))
+    expected_patch_0040_parts = ["00.b64", "01.b64"]
+    if [part.name for part in patch_0040_parts] != expected_patch_0040_parts:
+        raise SystemExit("Player gesture surface patch parts are incomplete or unexpected.")
+    expected_patch_0040_part_sha256 = {
+        "00.b64": "27e5ffa9737a588535c33353226cb1432b8b8f2f5ef1e30d3f6f3363c057c1f2",
+        "01.b64": "a0a600033a0aa9723f5e30a9ad80a3f9baa1cb5fa414a8fa31b8634b18ed3aa8",
+    }
+    encoded_patch_0040 = []
+    for part in patch_0040_parts:
+        raw = part.read_bytes()
+        # GitHub text writes can omit the final newline; normalize before hashing.
+        if not raw.endswith(b"\n"):
+            raw += b"\n"
+        actual = sha256(raw)
+        if actual != expected_patch_0040_part_sha256[part.name]:
+            raise SystemExit(f"Player gesture surface patch {part.name} checksum mismatch: {actual}")
+        encoded_patch_0040.append(raw.decode("ascii").strip())
+    try:
+        compressed_patch_0040 = base64.b64decode(
+            "".join(encoded_patch_0040), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid player gesture surface patch base64: {exc}") from exc
+    actual_patch_0040_sha256 = sha256(compressed_patch_0040)
+    if actual_patch_0040_sha256 != "5bd48bf8ed2a8f4ecd114dddf4eb393d0977388dc650c880d862a6ed60d511d7":
+        raise SystemExit(
+            f"Player gesture surface patch checksum mismatch: {actual_patch_0040_sha256}"
+        )
+    try:
+        patch_0040 = gzip.decompress(compressed_patch_0040)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(f"Player gesture surface patch is not a valid gzip payload: {exc}") from exc
+    apply_patch(output, patch_0040, "0040 deterministic single/double-tap player surface")
+
+    # Patch 0041 corrects gesture tests to use the actual rendered surface size,
+    # verifies separate taps outside the double-tap radius, and removes
+    # temporary pointer diagnostics from the player widget.
+    patch_0041_part = ROOT / "source" / "patches" / "0041-parts" / "00.b64"
+    raw_patch_0041_part = patch_0041_part.read_bytes()
+    if not raw_patch_0041_part.endswith(b"\n"):
+        raw_patch_0041_part += b"\n"
+    actual_patch_0041_part_sha256 = sha256(raw_patch_0041_part)
+    if actual_patch_0041_part_sha256 != "391a20c104e04de3cdd0b1f8caa41d635533eb7ea2d9e9bc355bc31dcb555bb6":
+        raise SystemExit(f"Player gesture test patch part checksum mismatch: {actual_patch_0041_part_sha256}")
+    try:
+        compressed_patch_0041 = base64.b64decode(
+            raw_patch_0041_part.decode("ascii").strip(), validate=True
+        )
+    except ValueError as exc:
+        raise SystemExit(f"Invalid player gesture test patch base64: {exc}") from exc
+    actual_patch_0041_sha256 = sha256(compressed_patch_0041)
+    if actual_patch_0041_sha256 != "ba469c9457b4a099f45df153ddd8c569b3af8df546ec18bb3275a47c48b99356":
+        raise SystemExit(f"Player gesture test patch checksum mismatch: {actual_patch_0041_sha256}")
+    try:
+        patch_0041 = gzip.decompress(compressed_patch_0041)
+    except (OSError, EOFError) as exc:
+        raise SystemExit(f"Player gesture test patch is not a valid gzip payload: {exc}") from exc
+    apply_patch(output, patch_0041, "0041 responsive gesture tests and debug-log cleanup")
+
+    patch_0042 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0042-player-dpad-navigation.patch.gz.b64",
+        "a1369d433d45ccbe95f010d3ddab5c668d8b8c5c3f81a0fd83077af5f1af339d",
+        "Player D-pad navigation and control focus memory",
+    )
+    apply_patch(output, patch_0042, "0042 player D-pad navigation and focus-aware control auto-hide")
+
+    patch_0043 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0043-player-auto-hide-lint-fix.patch.gz.b64",
+        "f825a2c24336d11ebc6aea661d157849d75e87b6446d9eeb8198c772a32cb37b",
+        "Player control auto-hide guard formatting",
+    )
+    apply_patch(output, patch_0043, "0043 format player control auto-hide guard")
+
+    patch_0044 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0044-player-tv-focus-back-and-hide.patch.gz.b64",
+        "e668b2ecaf359f9984064a8dcf467fb36cf46a83764d883d9ce1bcb7c6dbfc6e",
+        "Player TV focus, back navigation, and auto-hide reliability",
+    )
+    apply_patch(output, patch_0044, "0044 player TV focus, seek direction, immersive back, and auto-hide")
+
+    # Keep the remote-focus regression patch last so earlier patch history remains stable.
+    patch_0045 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0045-player-dpad-focus-repeat-back.patch.gz.b64",
+        "2af6b58fa62e55d1ac4627bb7c1eb60010360506793c204b6b33c2e214666748",
+        "Player D-pad focus, repeat, and back-key reliability",
+    )
+    apply_patch(output, patch_0045, "0045 player remote focus protection, long-select, and Go Back support")
+
+    patch_0046 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0046-player-seek-queue.patch.gz.b64",
+        "2296355e41d11bbdbc657c344c8278e28b9a53e9c116d9168a74b20fd21f5e78",
+        "Serialized player seeking and remote-repeat reliability",
+    )
+    apply_patch(output, patch_0046, "0046 serialized remote seeks and optimistic playback position")
+
+    patch_0047 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0047-watch-progress-seek-reliability.patch.gz.b64",
+        "3a5f02e862c2b86ed21801caad8842a6f6fed6108890fd00e99fb5ff82e27222",
+        "Watch progress and optimistic seek persistence reliability",
+    )
+    apply_patch(output, patch_0047, "0047 persist optimistic seek progress and clear resume at media start")
+
+    patch_0048 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0048-player-progress-flush-before-exit.patch.gz.b64",
+        "7dd166bd5d39162bc96c69c9a3ecfc621deac4596800b4d8e436cb36e818a569",
+        "Serialized watch-progress writes and awaited player exit flush",
+    )
+    apply_patch(output, patch_0048, "0048 coalesced watch-progress queue and flush before player exit")
+
+    patch_0049 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0049-player-exit-progress-guard.patch.gz.b64",
+        "2ab4e3ddce62101bb276cdd812fc96055667b819259c206017938b034487a1bb",
+        "Unified player exit routing through the watch-progress flush barrier",
+    )
+    apply_patch(output, patch_0049, "0049 route every player exit through progress flush")
+
+    patch_0050 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0050-player-display-settings-flush.patch.gz.b64",
+        "b4af8408643117e79b8b9421f352de060a2ceaee209e481ad28cc476e3204f9e",
+        "Coalesced display settings writes and awaited player-exit persistence",
+    )
+    apply_patch(output, patch_0050, "0050 flush final display settings before player exit")
+
+    patch_0051 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0051-player-lifecycle-coordinator.patch.gz.b64",
+        "8e2d1b74cbbff586915787794867e09cba19ae8b7e0cf701eff530420535dafa",
+        "Serialized playback lifecycle pause/resume and foreground restoration",
+    )
+    apply_patch(output, patch_0051, "0051 manage playback across inactive/background/resumed lifecycle")
+
+    patch_0052 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0052-player-lifecycle-duplicate-background-fix.patch.gz.b64",
+        "4eafea5c690f769ae3ebc3e5528b8b246cc496a6aa5d0c850e8b786e8f451de3",
+        "Preserve resume intent across duplicate background callbacks",
+    )
+    apply_patch(output, patch_0052, "0052 preserve resume intent across duplicate lifecycle background events")
 
 
 
 
+
+
+
+
+
+
+    patch_0053 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0053-player-lifecycle-rebackground-race.patch.gz.b64",
+        "187c586d8fe9e3632705fc9474f7490c3695861c80a0f927ba22ebaadda19288",
+        "Preserve lifecycle playback intent across rapid re-background transitions",
+    )
+    apply_patch(output, patch_0053, "0053 preserve playback intent across rapid lifecycle re-background transitions")
+
+    patch_0054 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0054-player-lifecycle-binding-integration.patch.gz.b64",
+        "280c93b2602cc4318a2969c7e36c74dcc7391e8d51f25ae3c06bb20e75634d78",
+        "Flutter lifecycle observer binding and integration tests",
+    )
+    apply_patch(output, patch_0054, "0054 extract Flutter lifecycle observer binding and test real state dispatch")
+
+    patch_0055 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0055-lifecycle-test-state-baseline.patch.gz.b64",
+        "c37b99e6e55f2309086a98d4229307e9af4da87fbc41d57778ebd640333339a8",
+        "Lifecycle widget-test initial state synchronization",
+    )
+    apply_patch(output, patch_0055, "0055 synchronize initial lifecycle state in observer integration test")
+
+    patch_0056 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0056-lifecycle-pending-transition.patch.gz.b64",
+        "70ad9f7a5fa88849096041c165c724e6bdceef44182c3b7bb1c2bf149de0646e",
+        "Lifecycle binding transition completion and initial-resume semantics",
+    )
+    apply_patch(output, patch_0056, "0056 expose lifecycle transition completion and avoid synthetic initial resume")
+
+    # Normalize the lifecycle widget-test driver after patch 0056. Do not
+    # pump a frame while the app is hidden/paused: Flutter disables frame
+    # scheduling in those states. Dispatch through the binding's lifecycle
+    # observer entry point so tests exercise the same WidgetsBinding observers.
+    lifecycle_test_path = output / "test" / "player_lifecycle_binding_test.dart"
+    lifecycle_test = lifecycle_test_path.read_text(encoding="utf-8")
+    old_lifecycle_helper = """import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';"""
+    new_lifecycle_helper = """import 'package:flutter/widgets.dart';"""
+    if old_lifecycle_helper not in lifecycle_test:
+        raise SystemExit("Lifecycle widget-test imports do not match the expected 0056 source.")
+    lifecycle_test = lifecycle_test.replace(old_lifecycle_helper, new_lifecycle_helper, 1)
+    old_lifecycle_helper = """Future<void> sendLifecycleState(
+  WidgetTester tester,
+  AppLifecycleState state,
+) async {
+  final message = const StringCodec().encodeMessage(state.toString());
+  tester.binding.channelBuffers.push(
+    SystemChannels.lifecycle.name,
+    message,
+    (_) {},
+  );
+  await tester.pump();
+}"""
+    new_lifecycle_helper = """void sendLifecycleState(
+  WidgetTester tester,
+  AppLifecycleState state,
+) {
+  // ignore: invalid_use_of_protected_member
+  tester.binding.handleAppLifecycleStateChanged(state);
+}"""
+    if old_lifecycle_helper not in lifecycle_test:
+        raise SystemExit("Lifecycle widget-test helper does not match the expected 0056 source.")
+    lifecycle_test = lifecycle_test.replace(old_lifecycle_helper, new_lifecycle_helper, 1)
+    lifecycle_test = lifecycle_test.replace("await sendLifecycleState(", "sendLifecycleState(")
+    lifecycle_test = lifecycle_test.replace("        await tester.pump();" + chr(10), "")
+    lifecycle_test = lifecycle_test.replace("      await tester.pump();" + chr(10), "")
+    lifecycle_test_path.write_text(lifecycle_test, encoding="utf-8")
+
+    patch_0058 = verified_gzip_patch(
+        ROOT / "source" / "patches" / "0058-player-lifecycle-save-cycle.patch.gz.b64",
+        "018746a96c356c28ea67d928d7f323d13dee372cba377ce6548cea19df370de0",
+        "Fresh state persistence for each foreground/background lifecycle cycle",
+    )
+    apply_patch(output, patch_0058, "0058 persist latest player state after every foreground return and re-background")
 
     for backup in output.rglob("*.orig"):
         backup.unlink()
